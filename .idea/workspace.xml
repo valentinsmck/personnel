@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="aab0692a-3687-4ebc-8859-162c5f6e02be" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Personnel/src/personnel/DateIncoherenteException.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Personnel/src/commandLine/EmployeConsole.java" beforeDir="false" afterPath="$PROJECT_DIR$/Personnel/src/commandLine/EmployeConsole.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Personnel/src/commandLine/LigueConsole.java" beforeDir="false" afterPath="$PROJECT_DIR$/Personnel/src/commandLine/LigueConsole.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Personnel/src/commandLine/PersonnelConsole.java" beforeDir="false" afterPath="$PROJECT_DIR$/Personnel/src/commandLine/PersonnelConsole.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Personnel/src/personnel/Employe.java" beforeDir="false" afterPath="$PROJECT_DIR$/Personnel/src/personnel/Employe.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Personnel/src/personnel/GestionPersonnel.java" beforeDir="false" afterPath="$PROJECT_DIR$/Personnel/src/personnel/GestionPersonnel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Personnel/src/personnel/Ligue.java" beforeDir="false" afterPath="$PROJECT_DIR$/Personnel/src/personnel/Ligue.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Personnel/src/testsUnitaires/testLigue.java" beforeDir="false" afterPath="$PROJECT_DIR$/Personnel/src/testsUnitaires/testLigue.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Personnel/target/classes/commandLine/EmployeConsole.class" beforeDir="false" afterPath="$PROJECT_DIR$/Personnel/target/classes/commandLine/EmployeConsole.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Personnel/target/classes/commandLine/LigueConsole.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Personnel/target/classes/commandLine/PersonnelConsole.class" beforeDir="false" afterPath="$PROJECT_DIR$/Personnel/target/classes/commandLine/PersonnelConsole.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Personnel/target/classes/personnel/Employe.class" beforeDir="false" afterPath="$PROJECT_DIR$/Personnel/target/classes/personnel/Employe.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Personnel/target/classes/personnel/GestionPersonnel.class" beforeDir="false" afterPath="$PROJECT_DIR$/Personnel/target/classes/personnel/GestionPersonnel.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Personnel/target/classes/personnel/Ligue.class" beforeDir="false" afterPath="$PROJECT_DIR$/Personnel/target/classes/personnel/Ligue.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Personnel/target/classes/testsUnitaires/testLigue.class" beforeDir="false" afterPath="$PROJECT_DIR$/Personnel/target/classes/testsUnitaires/testLigue.class" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 7
+}]]></component>
+  <component name="ProjectId" id="35bmxJLMIdho3hmAeQNejrul5r8" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.PersonnelConsole.executor": "Run",
+    "JUnit.EmployeTest.executor": "Run",
+    "JUnit.testLigue.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/mmoualfi.MDNPEDAGO/Documents/github/personnel",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.27397.103" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="aab0692a-3687-4ebc-8859-162c5f6e02be" name="Changes" comment="" />
+      <created>1763387391261</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1763387391261</updated>
+      <workItem from="1763387403140" duration="9157000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
