@@ -19,3 +19,4 @@ CREATE TABLE EMPLOYE(
    UNIQUE(mail_employe),
    FOREIGN KEY(id_ligue) REFERENCES LIGUE(id_ligue)
 );
+
