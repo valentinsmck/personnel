@@ -1,9 +1,11 @@
-package personnel;
+package testsUnitaires;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.lang.reflect.Field;
 import static org.junit.jupiter.api.Assertions.*;
+
+import personnel.*;
 
 class GestionPersonnelTest {
 
@@ -18,12 +20,13 @@ class GestionPersonnelTest {
         instanceField.setAccessible(true);
         instanceField.set(null, null);
 
-        gestion = new GestionPersonnel();
+        gestion = GestionPersonnel.getGestionPersonnel();
         root = gestion.getRoot();
 
-        ligueTest = gestion.addLigue(1, "Ligue de Test");
+        // addLigue peut lancer SauvegardeImpossible, mais setUp() throws Exception, donc c'est bon ici
+        ligueTest = gestion.addLigue("Ligue de Test");
 
-        employeTest = ligueTest.addEmploye("Dupont", "Jean", "jean@email.com", "mdp123");
+        employeTest = ligueTest.addEmploye("Dupont", "Jean", "jean@email.com", "mdp123", null, null);
     }
 
     @Test
@@ -32,10 +35,11 @@ class GestionPersonnelTest {
         assertEquals(employeTest, ligueTest.getAdministrateur());
     }
 
+    // --- CORRECTION ICI : Ajout de "throws SauvegardeImpossible" ---
     @Test
-    void testChangementAdminLigueEchecDroitsInsuffisants() {
-        Ligue ligueB = gestion.addLigue(2, "Ligue B");
-        Employe employeLigueB = ligueB.addEmploye("Autre", "Employe", "autre@mail.com", "pass");
+    void testChangementAdminLigueEchecDroitsInsuffisants() throws SauvegardeImpossible {
+        Ligue ligueB = gestion.addLigue("Ligue B"); // Cette ligne nécessitait le throws
+        Employe employeLigueB = ligueB.addEmploye("Autre", "Employe", "autre@mail.com", "pass", null, null);
 
         assertThrows(DroitsInsuffisants.class, () -> {
             ligueTest.setAdministrateur(employeLigueB);

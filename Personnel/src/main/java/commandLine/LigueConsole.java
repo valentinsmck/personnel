@@ -3,15 +3,14 @@ package commandLine;
 import static commandLineMenus.rendering.examples.util.InOut.getString;
 
 import java.util.ArrayList;
-// --- IMPORTS AJOUTÉS ---
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-// ------------------------
 
 import commandLineMenus.List;
 import commandLineMenus.Menu;
 import commandLineMenus.Option;
+import commandLineMenus.Action;
 
 import personnel.*;
 
@@ -20,7 +19,8 @@ public class LigueConsole
     private GestionPersonnel gestionPersonnel;
     private EmployeConsole employeConsole;
 
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE; // YYYY-MM-DD
+    // Pour gérer la saisie des dates
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
 
     public LigueConsole(GestionPersonnel gestionPersonnel, EmployeConsole employeConsole)
     {
@@ -43,9 +43,6 @@ public class LigueConsole
         return new Option("Afficher les ligues", "l", () -> {System.out.println(gestionPersonnel.getLigues());});
     }
 
-    /**
-     * MODIFIÉ : Utilise le toString() de Employe (qui affiche les dates)
-     */
     private Option afficher(final Ligue ligue)
     {
         return new Option("Afficher la ligue", "l",
@@ -57,9 +54,6 @@ public class LigueConsole
         );
     }
 
-    /**
-     * MODIFIÉ : Utilise le toString() de Employe (qui affiche les dates)
-     */
     private Option afficherEmployes(final Ligue ligue)
     {
         return new Option("Afficher les employes", "l", () -> {System.out.println(ligue.getEmployes());});
@@ -85,7 +79,6 @@ public class LigueConsole
         Menu menu = new Menu("Editer " + ligue.getNom());
         menu.add(afficher(ligue));
         menu.add(gererEmployes(ligue));
-        //menu.add(changerAdministrateur(ligue));
         menu.add(changerNom(ligue));
         menu.add(supprimer(ligue));
         menu.addBack("q");
@@ -106,15 +99,12 @@ public class LigueConsole
         );
     }
 
-    /**
-     * MODIFIÉ pour demander la date d'arrivée
-     */
+    // --- CORRECTION : AJOUT DES DATES POUR SATISFAIRE LE COMPILATEUR ---
     private Option ajouterEmploye(final Ligue ligue)
     {
         return new Option("ajouter un employé", "a",
                 () ->
                 {
-                    // Saisie standard
                     String nom = getString("nom : ");
                     String prenom = getString("prenom : ");
                     String mail = getString("mail : ");
@@ -124,69 +114,73 @@ public class LigueConsole
                     LocalDate dateDepart = null;
 
                     try {
-                        // --- Saisie Date Arrivée ---
+                        // On demande les dates (ou on laisse vide)
                         String dateArriveeStr = getString("Date d'arrivée (YYYY-MM-DD) (ou vide pour aujourd'hui) : ");
                         if (dateArriveeStr != null && !dateArriveeStr.trim().isEmpty()) {
                             dateArrivee = LocalDate.parse(dateArriveeStr, DATE_FORMATTER);
                         } else {
-                            dateArrivee = LocalDate.now(); // Défaut si vide
+                            dateArrivee = LocalDate.now();
                         }
 
-                        // --- Saisie Date Départ (AJOUTÉ) ---
                         String dateDepartStr = getString("Date de départ (YYYY-MM-DD) (ou vide si 'en poste') : ");
                         if (dateDepartStr != null && !dateDepartStr.trim().isEmpty()) {
                             dateDepart = LocalDate.parse(dateDepartStr, DATE_FORMATTER);
                         }
 
-                        // --- CORRECTION DE L'APPEL (6 arguments) ---
-                        Employe nouvelEmploye = ligue.addEmploye(nom, prenom, mail, password, dateArrivee, dateDepart);
-                        System.out.println("Employé ajouté : " + nouvelEmploye); // toString() affichera les dates
+                        // Appel avec 6 arguments (CORRECTION DE L'ERREUR)
+                        ligue.addEmploye(nom, prenom, mail, password, dateArrivee, dateDepart);
 
                     } catch (DateTimeParseException e) {
-                        System.err.println("Erreur : Format de date invalide. L'employé n'a PAS été créé.");
-                    } catch (DateIncoherenteException e) {
-                        // Gère l'erreur si la date de départ est avant l'arrivée (du constructeur Employe)
-                        System.err.println("Erreur : " + e.getMessage() + " L'employé n'a PAS été créé.");
+                        System.err.println("Format de date invalide.");
+                    } catch (DateIncoherenteException e) { // On attrape l'exception définie dans votre projet
+                        System.err.println("Erreur de dates : " + e.getMessage());
+                    } catch (Exception e) {
+                        System.err.println("Erreur : " + e.getMessage());
                     }
                 }
         );
     }
+
+    // --- NOUVEAU MENU DE SÉLECTION (Mission Actuelle) ---
 
     private Menu gererEmployes(Ligue ligue)
     {
         Menu menu = new Menu("Gérer les employés de " + ligue.getNom(), "e");
         menu.add(afficherEmployes(ligue));
         menu.add(ajouterEmploye(ligue));
-        menu.add(modifierEmploye(ligue));
-        menu.add(supprimerEmploye(ligue));
+        // L'option clé demandée par la mission :
+        menu.add(selectionnerEmploye(ligue));
         menu.addBack("q");
         return menu;
     }
 
-    private List<Employe> supprimerEmploye(final Ligue ligue)
+    private List<Employe> selectionnerEmploye(final Ligue ligue)
     {
-        return new List<>("Supprimer un employé", "s",
+        return new List<>("Sélectionner un employé", "e",
                 () -> new ArrayList<>(ligue.getEmployes()),
-                (index, element) -> {element.remove();}
+                (element) -> gererEmploye(element)
         );
     }
 
-    private List<Employe> changerAdministrateur(final Ligue ligue)
+    private Menu gererEmploye(Employe employe)
     {
-        return null;
+        Menu menu = new Menu("Gérer " + employe.getNom(), "g");
+        menu.add(employeConsole.editerEmploye(employe));
+        menu.add(supprimerEmploye(employe));
+        menu.addBack("q");
+        return menu;
     }
 
-    private List<Employe> modifierEmploye(final Ligue ligue)
+    private Option supprimerEmploye(final Employe employe)
     {
-        return new List<>("Modifier un employé", "e",
-                () -> new ArrayList<>(ligue.getEmployes()),
-                employeConsole.editerEmploye() // Utilise l'EmployeConsole mis à jour
-        );
+        return new Option("Supprimer", "s", () -> {
+            employe.remove();
+            Action.QUIT.optionSelected();
+        });
     }
 
     private Option supprimer(Ligue ligue)
     {
         return new Option("Supprimer", "d", () -> {ligue.remove();});
     }
-
 }

@@ -1,11 +1,11 @@
-package personnel;
+package testsUnitaires; // 1. Correction du package
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import java.lang.reflect.Field;
-
 import static org.junit.jupiter.api.Assertions.*;
+
+import personnel.*; // 2. Import des classes métier
 
 class EmployeTest {
 
@@ -16,16 +16,18 @@ class EmployeTest {
 
     @BeforeEach
     void setUp() throws Exception {
+        // Réinitialisation du Singleton
         Field instanceField = GestionPersonnel.class.getDeclaredField("gestionPersonnel");
         instanceField.setAccessible(true);
         instanceField.set(null, null);
 
-        gestion = new GestionPersonnel();
+        gestion = GestionPersonnel.getGestionPersonnel();
         root = gestion.getRoot();
 
-        ligueTest = gestion.addLigue(1, "Ligue de Test");
+        ligueTest = gestion.addLigue("Ligue de Test");
 
-        employeTest = ligueTest.addEmploye("Dupont", "Jean", "jean@email.com", "mdp123");
+        // 3. Correction : Ajout des 2 arguments null pour les dates
+        employeTest = ligueTest.addEmploye("Dupont", "Jean", "jean@email.com", "mdp123", null, null);
     }
 
     @Test

@@ -1,70 +1,106 @@
-package personnel;
+package testsUnitaires;
 
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import personnel.*;
 import java.lang.reflect.Field;
-import static org.junit.jupiter.api.Assertions.*;
+import java.time.LocalDate;
 
-class LigueTest {
-
-    protected GestionPersonnel gestion;
-    protected Ligue ligueTest;
-    protected Employe employeTest;
-    protected Employe root;
+class LigueTest
+{
+    GestionPersonnel gestion;
+    Ligue ligue;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() throws Exception
+    {
+        // Réinitialisation du Singleton
         Field instanceField = GestionPersonnel.class.getDeclaredField("gestionPersonnel");
         instanceField.setAccessible(true);
         instanceField.set(null, null);
 
-        gestion = new GestionPersonnel();
-        root = gestion.getRoot();
-
-        ligueTest = gestion.addLigue(1, "Ligue de Test");
-
-        employeTest = ligueTest.addEmploye("Dupont", "Jean", "jean@email.com", "mdp123");
+        gestion = GestionPersonnel.getGestionPersonnel();
+        ligue = gestion.addLigue("Ligue de Test");
     }
 
     @Test
-    void setNom() {
-        ligueTest.setNom("Nouveau Nom de Ligue");
-        assertEquals("Nouveau Nom de Ligue", ligueTest.getNom());
+    void testSetNom()
+    {
+        ligue.setNom("Nouveau Nom");
+        assertEquals("Nouveau Nom", ligue.getNom());
     }
 
     @Test
-    void setAdministrateur() {
-        assertEquals(root, ligueTest.getAdministrateur());
-        ligueTest.setAdministrateur(employeTest);
-        assertEquals(employeTest, ligueTest.getAdministrateur());
+    void testSetAdministrateur()
+    {
+        Employe employe = ligue.addEmploye("Nom", "Prenom", "mail@test.com", "mdp", null, null);
+
+        assertEquals(gestion.getRoot(), ligue.getAdministrateur());
+
+        ligue.setAdministrateur(employe);
+        assertEquals(employe, ligue.getAdministrateur());
     }
 
+    // --- CORRECTION ICI : Ajout de "throws SauvegardeImpossible" ---
     @Test
-    void testSetAdministrateurDroitsInsuffisants() {
-        Ligue ligueB = gestion.addLigue(2, "Ligue B");
-        Employe employeEtranger = ligueB.addEmploye("Etranger", "Paul", "paul@mail.com", "pass");
+    void testSetAdministrateurDroitsInsuffisants() throws SauvegardeImpossible
+    {
+        Ligue autreLigue = gestion.addLigue("Autre Ligue"); // Cette ligne peut lancer l'exception
+        Employe employeAutreLigue = autreLigue.addEmploye("Intrus", "Paul", "intrus@test.com", "pass", null, null);
 
         assertThrows(DroitsInsuffisants.class, () -> {
-            ligueTest.setAdministrateur(employeEtranger);
+            ligue.setAdministrateur(employeAutreLigue);
         });
     }
 
     @Test
-    void addEmploye() {
-        Employe nouvelEmploye = ligueTest.addEmploye("Durand", "Alice", "alice@mail.com", "pass");
+    void testSuppressionEmploye()
+    {
+        Employe employe = ligue.addEmploye("A_Supprimer", "Test", "suppr@test.com", "mdp", null, null);
 
-        assertEquals(2, ligueTest.getEmployes().size());
-        assertTrue(ligueTest.getEmployes().contains(employeTest));
-        assertTrue(ligueTest.getEmployes().contains(nouvelEmploye));
-        assertEquals(ligueTest, nouvelEmploye.getLigue());
+        assertTrue(ligue.getEmployes().contains(employe));
+
+        employe.remove();
+
+        assertFalse(ligue.getEmployes().contains(employe));
     }
 
     @Test
-    void remove() {
-        assertTrue(gestion.getLigues().contains(ligueTest));
+    void testChangementAdministrateur()
+    {
+        Employe adminPotentiel = ligue.addEmploye("Futur", "Admin", "admin@test.com", "mdp", null, null);
+        ligue.setAdministrateur(adminPotentiel);
+        assertEquals(adminPotentiel, ligue.getAdministrateur());
+    }
 
-        ligueTest.remove();
+    @Test
+    void testSuppressionAdministrateur()
+    {
+        Employe admin = ligue.addEmploye("Admin", "Test", "admin@test.com", "mdp", null, null);
 
-        assertFalse(gestion.getLigues().contains(ligueTest));
+        ligue.setAdministrateur(admin);
+
+        assertEquals(admin, ligue.getAdministrateur());
+
+        admin.remove();
+
+        assertEquals(gestion.getRoot(), ligue.getAdministrateur());
+        assertFalse(ligue.getEmployes().contains(admin));
+    }
+
+    @Test
+    void testAddEmploye()
+    {
+        Employe e = ligue.addEmploye("Dupont", "Jean", "j.dupont@mail.com", "mdp", LocalDate.now(), null);
+        assertEquals(e, ligue.getEmployes().last());
+        assertEquals(1, ligue.getEmployes().size());
+    }
+
+    @Test
+    void testSuppressionLigue()
+    {
+        ligue.remove();
+        assertFalse(gestion.getLigues().contains(ligue));
     }
 }
