@@ -1,0 +1,35 @@
+# --- 1. SÉCURITÉ (Le plus important) ---
+# Ignore le fichier contenant les vrais mots de passe de la BDD
+Credentials.java
+**/Credentials.java
+
+# --- 2. COMPILATION MAVEN ---
+# Le dossier où Maven construit le projet (à ne jamais envoyer)
+target/
+**/target/
+*.log
+
+# --- 3. BASE DE DONNÉES LOCALE ---
+# Votre fichier de sauvegarde binaire local
+GestionPersonnel.srz
+
+# --- 4. CONFIGURATION IDE (IntelliJ IDEA) ---
+.idea/
+*.iml
+*.iws
+/shelf/
+/workspace.xml
+/httpRequests/
+/dataSources/
+/dataSources.local.xml
+
+# --- 5. CONFIGURATION IDE (Eclipse / VS Code) ---
+.classpath
+.project
+.settings/
+.vscode/
+bin/
+
+# --- 6. SYSTÈME D'EXPLOITATION ---
+.DS_Store
+Thumbs.db
