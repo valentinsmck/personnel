@@ -96,12 +96,15 @@ public class LigueConsole
     {
         return new List<Employe>("Changer l'administrateur", "a",
                 () -> new ArrayList<>(ligue.getEmployes()),
-                (employe) -> {
-                    try {
-                        ligue.setAdministrateur(employe);
-                        System.out.println(employe.getNom() + " " + employe.getPrenom() + " est maintenant administrateur de " + ligue.getNom());
-                    } catch (DroitsInsuffisants e) {
-                        System.err.println("Erreur : Cet employé n'appartient pas à cette ligue.");
+                new commandLineMenus.ListAction<Employe>() {
+                    @Override
+                    public void itemSelected(int index, Employe employe) {
+                        try {
+                            ligue.setAdministrateur(employe);
+                            System.out.println(employe.getNom() + " " + employe.getPrenom() + " est maintenant administrateur de " + ligue.getNom());
+                        } catch (DroitsInsuffisants e) {
+                            System.err.println("Erreur : Cet employé n'appartient pas à cette ligue.");
+                        }
                     }
                 }
         );
