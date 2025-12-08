@@ -80,6 +80,7 @@ public class LigueConsole
         menu.add(afficher(ligue));
         menu.add(gererEmployes(ligue));
         menu.add(changerNom(ligue));
+        menu.add(changerAdministrateur(ligue));
         menu.add(supprimer(ligue));
         menu.addBack("q");
         return menu;
@@ -89,6 +90,21 @@ public class LigueConsole
     {
         return new Option("Renommer", "r",
                 () -> {ligue.setNom(getString("Nouveau nom : "));});
+    }
+
+    private List<Employe> changerAdministrateur(final Ligue ligue)
+    {
+        return new List<Employe>("Changer l'administrateur", "a",
+                () -> new ArrayList<>(ligue.getEmployes()),
+                (employe) -> {
+                    try {
+                        ligue.setAdministrateur(employe);
+                        System.out.println(employe.getNom() + " " + employe.getPrenom() + " est maintenant administrateur de " + ligue.getNom());
+                    } catch (DroitsInsuffisants e) {
+                        System.err.println("Erreur : Cet employé n'appartient pas à cette ligue.");
+                    }
+                }
+        );
     }
 
     private List<Ligue> selectionnerLigue()
