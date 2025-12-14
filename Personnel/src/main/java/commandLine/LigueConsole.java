@@ -1,12 +1,10 @@
 package commandLine;
 
 import static commandLineMenus.rendering.examples.util.InOut.getString;
-
 import java.util.ArrayList;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-
 import commandLineMenus.List;
 import commandLineMenus.Menu;
 import commandLineMenus.Option;
@@ -115,6 +113,7 @@ public class LigueConsole
         menu.add(gererEmployes(ligue));
         menu.add(changerNom(ligue));
         menu.add(changerAdministrateur(ligue));
+        menu.add(afficherAdministrateurs());
         menu.add(supprimer(ligue));
         menu.addBack("q");
         return menu;
@@ -144,6 +143,21 @@ public class LigueConsole
         );
     }
 
+    private Option afficherAdministrateurs()
+    {
+        return new Option("Afficher les administrateurs", "m", () -> {
+            System.out.println("\n--- Super Administrateur ---");
+            System.out.println(gestionPersonnel.getRoot().getNom() + " " + gestionPersonnel.getRoot().getPrenom());
+
+            System.out.println("\n--- Administrateurs de Ligue ---");
+            for (Ligue ligue : gestionPersonnel.getLigues()) {
+                System.out.println(ligue.getNom() + " : géré par " +
+                        ligue.getAdministrateur().getNom() + " " +
+                        ligue.getAdministrateur().getPrenom());
+            }
+        });
+    }
+
     private List<Ligue> selectionnerLigue()
     {
         return new List<Ligue>("Sélectionner une ligue", "e",
@@ -152,7 +166,6 @@ public class LigueConsole
         );
     }
 
-    // --- CORRECTION : AJOUT DES DATES POUR SATISFAIRE LE COMPILATEUR ---
     private Option ajouterEmploye(final Ligue ligue)
     {
         return new Option("ajouter un employé", "a",
@@ -183,14 +196,12 @@ public class LigueConsole
         );
     }
 
-    // --- NOUVEAU MENU DE SÉLECTION (Mission Actuelle) ---
 
     private Menu gererEmployes(Ligue ligue)
     {
         Menu menu = new Menu("Gérer les employés de " + ligue.getNom(), "e");
         menu.add(afficherEmployes(ligue));
         menu.add(ajouterEmploye(ligue));
-        // L'option clé demandée par la mission :
         menu.add(selectionnerEmploye(ligue));
         menu.addBack("q");
         return menu;
