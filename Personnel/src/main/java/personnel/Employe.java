@@ -196,8 +196,6 @@ public class Employe implements Serializable, Comparable<Employe>
             throw new ImpossibleDeSupprimerRoot();
     }
 
-// ... (tout le début du fichier Employe.java reste identique) ...
-
     @Override
     public int compareTo(Employe autre)
     {

@@ -15,7 +15,6 @@ class LigueTest
     @BeforeEach
     void setUp() throws Exception
     {
-        // Réinitialisation du Singleton
         Field instanceField = GestionPersonnel.class.getDeclaredField("gestionPersonnel");
         instanceField.setAccessible(true);
         instanceField.set(null, null);
@@ -42,11 +41,10 @@ class LigueTest
         assertEquals(employe, ligue.getAdministrateur());
     }
 
-    // --- CORRECTION ICI : Ajout de "throws SauvegardeImpossible" ---
     @Test
     void testSetAdministrateurDroitsInsuffisants() throws SauvegardeImpossible
     {
-        Ligue autreLigue = gestion.addLigue("Autre Ligue"); // Cette ligne peut lancer l'exception
+        Ligue autreLigue = gestion.addLigue("Autre Ligue");
         Employe employeAutreLigue = autreLigue.addEmploye("Intrus", "Paul", "intrus@test.com", "pass", null, null);
 
         assertThrows(DroitsInsuffisants.class, () -> {

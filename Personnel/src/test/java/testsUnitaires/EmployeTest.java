@@ -17,21 +17,15 @@ class EmployeTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        // 1. Réinitialisation du Singleton pour avoir des tests propres
         Field instanceField = GestionPersonnel.class.getDeclaredField("gestionPersonnel");
         instanceField.setAccessible(true);
         instanceField.set(null, null);
 
         gestion = GestionPersonnel.getGestionPersonnel();
         root = gestion.getRoot();
-
         ligueTest = gestion.addLigue("Ligue de Test");
-
-        // 2. Initialisation d'un employé avec une date d'arrivée (Aujourd'hui) et pas de départ
         employeTest = ligueTest.addEmploye("Dupont", "Jean", "jean@email.com", "mdp123", LocalDate.now(), null);
     }
-
-    // --- TESTS CLASSIQUES (Mission de base) ---
 
     @Test
     void setNom() {
@@ -66,11 +60,8 @@ class EmployeTest {
         assertFalse(ligueTest.getEmployes().contains(employeTest));
     }
 
-    // --- TESTS DES DATES (Mission 3) ---
-
     @Test
     void testDateArriveeParDefaut() {
-        // Vérifie que la date mise dans le setUp est bien là
         assertNotNull(employeTest.getDateArrivee());
         assertEquals(LocalDate.now(), employeTest.getDateArrivee());
         assertNull(employeTest.getDateDepart());
@@ -90,8 +81,6 @@ class EmployeTest {
 
     @Test
     void testSetDateDepartIncoherente() {
-        // employeTest est arrivé aujourd'hui (via setup)
-        // On essaie de le faire partir HIER (Incohérent)
         LocalDate departInvalide = LocalDate.now().minusDays(1);
 
         assertThrows(DateIncoherenteException.class, () -> {
@@ -105,8 +94,6 @@ class EmployeTest {
         LocalDate departValide = LocalDate.of(2023, 1, 1);
         employeTest.setDateArrivee(arriveeInitiale);
         employeTest.setDateDepart(departValide);
-
-        // On essaie de changer l'arrivée pour qu'elle soit APRÈS le départ (Incohérent)
         LocalDate arriveeIncoherente = LocalDate.of(2024, 1, 1);
 
         assertThrows(DateIncoherenteException.class, () -> {
@@ -120,7 +107,6 @@ class EmployeTest {
         LocalDate arrivee = LocalDate.of(2023, 1, 1);
         LocalDate depart = LocalDate.of(2022, 1, 1); // Départ AVANT arrivée
 
-        // Teste si la création directe échoue bien
         assertThrows(DateIncoherenteException.class, () -> {
             ligue.addEmploye("Date", "Test", "date@test.com", "mdp", arrivee, depart);
         });

@@ -118,8 +118,8 @@ public class Ligue implements Serializable, Comparable<Ligue>
             employes.add(employe);
             return employe;
         } catch (DateIncoherenteException e) {
-            // Gérer l'exception si la console ne l'a pas fait (ne devrait pas arriver avec les consoles modifiées)
-            throw e; // Renvoyer l'exception
+            // Gérer l'exception si la console ne l'a pas fait
+            throw e;
         }
     }
 

@@ -21,9 +21,6 @@ public class GestionPersonnel implements Serializable
     private static final long serialVersionUID = -105283113987886425L;
     private static GestionPersonnel gestionPersonnel = null;
     private SortedSet<Ligue> ligues;
-
-    // Ligne 25 (corrigée)
-// Ajout de 'null' comme 8e argument pour la date de départ
     private Employe root = new Employe(this, null, "root", "", "", "toor", LocalDate.now(), null);
 
     public final static int SERIALIZATION = 1, JDBC = 2,

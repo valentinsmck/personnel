@@ -22,10 +22,7 @@ class GestionPersonnelTest {
 
         gestion = GestionPersonnel.getGestionPersonnel();
         root = gestion.getRoot();
-
-        // addLigue peut lancer SauvegardeImpossible, mais setUp() throws Exception, donc c'est bon ici
         ligueTest = gestion.addLigue("Ligue de Test");
-
         employeTest = ligueTest.addEmploye("Dupont", "Jean", "jean@email.com", "mdp123", null, null);
     }
 
@@ -35,10 +32,9 @@ class GestionPersonnelTest {
         assertEquals(employeTest, ligueTest.getAdministrateur());
     }
 
-    // --- CORRECTION ICI : Ajout de "throws SauvegardeImpossible" ---
     @Test
     void testChangementAdminLigueEchecDroitsInsuffisants() throws SauvegardeImpossible {
-        Ligue ligueB = gestion.addLigue("Ligue B"); // Cette ligne nécessitait le throws
+        Ligue ligueB = gestion.addLigue("Ligue B");
         Employe employeLigueB = ligueB.addEmploye("Autre", "Employe", "autre@mail.com", "pass", null, null);
 
         assertThrows(DroitsInsuffisants.class, () -> {
