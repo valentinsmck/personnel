@@ -22,6 +22,40 @@ public class LigueConsole
     // Pour gérer la saisie des dates
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
 
+    /**
+     * Demande une date à l'utilisateur avec validation et possibilité de champ vide.
+     * @param prompt texte affiché
+     * @param optional si vrai, l'utilisateur peut laisser vide pour retourner null
+     * @param defaultToday si vrai et saisie vide, retourne la date du jour (ignoré si optional=false)
+     */
+    private LocalDate saisirDate(String prompt, boolean optional, boolean defaultToday)
+    {
+        while (true)
+        {
+            String saisie = getString(prompt);
+            if (saisie == null)
+                return null;
+            saisie = saisie.trim();
+
+            if (saisie.isEmpty())
+            {
+                if (optional)
+                    return defaultToday ? LocalDate.now() : null;
+            }
+            else
+            {
+                try
+                {
+                    return LocalDate.parse(saisie, DATE_FORMATTER);
+                }
+                catch (DateTimeParseException e)
+                {
+                    System.err.println("Format de date invalide (attendu YYYY-MM-DD). Réessayez.");
+                }
+            }
+        }
+    }
+
     public LigueConsole(GestionPersonnel gestionPersonnel, EmployeConsole employeConsole)
     {
         this.gestionPersonnel = gestionPersonnel;
@@ -129,31 +163,20 @@ public class LigueConsole
                     String mail = getString("mail : ");
                     String password = getString("password : ");
 
-                    LocalDate dateArrivee = null;
-                    LocalDate dateDepart = null;
+                    try
+                    {
+                        LocalDate dateArrivee = saisirDate("Date d'arrivée (YYYY-MM-DD) (vide = aujourd'hui) : ", true, true);
+                        LocalDate dateDepart = saisirDate("Date de départ (YYYY-MM-DD) (vide = en poste) : ", true, false);
 
-                    try {
-                        // On demande les dates (ou on laisse vide)
-                        String dateArriveeStr = getString("Date d'arrivée (YYYY-MM-DD) (ou vide pour aujourd'hui) : ");
-                        if (dateArriveeStr != null && !dateArriveeStr.trim().isEmpty()) {
-                            dateArrivee = LocalDate.parse(dateArriveeStr, DATE_FORMATTER);
-                        } else {
-                            dateArrivee = LocalDate.now();
-                        }
-
-                        String dateDepartStr = getString("Date de départ (YYYY-MM-DD) (ou vide si 'en poste') : ");
-                        if (dateDepartStr != null && !dateDepartStr.trim().isEmpty()) {
-                            dateDepart = LocalDate.parse(dateDepartStr, DATE_FORMATTER);
-                        }
-
-                        // Appel avec 6 arguments (CORRECTION DE L'ERREUR)
                         ligue.addEmploye(nom, prenom, mail, password, dateArrivee, dateDepart);
-
-                    } catch (DateTimeParseException e) {
-                        System.err.println("Format de date invalide.");
-                    } catch (DateIncoherenteException e) { // On attrape l'exception définie dans votre projet
-                        System.err.println("Erreur de dates : " + e.getMessage());
-                    } catch (Exception e) {
+                        System.out.println("Employé ajouté avec succès.");
+                    }
+                    catch (DateIncoherenteException e)
+                    {
+                        System.err.println("Erreur de cohérence des dates : " + e.getMessage());
+                    }
+                    catch (Exception e)
+                    {
                         System.err.println("Erreur : " + e.getMessage());
                     }
                 }

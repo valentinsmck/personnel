@@ -19,6 +19,35 @@ public class EmployeConsole
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE; // Format YYYY-MM-DD
 
     /**
+     * Demande une date avec validation. Si optional est vrai, retournera null si saisie vide.
+     */
+    private LocalDate saisirDate(String prompt, boolean optional)
+    {
+        while (true)
+        {
+            String saisie = getString(prompt);
+            if (saisie == null)
+                return null;
+            saisie = saisie.trim();
+
+            if (saisie.isEmpty() && optional)
+                return null;
+
+            if (!saisie.isEmpty())
+            {
+                try
+                {
+                    return LocalDate.parse(saisie, DATE_FORMATTER);
+                }
+                catch (DateTimeParseException e)
+                {
+                    System.err.println("Erreur : Format de date invalide. Utilisez YYYY-MM-DD.");
+                }
+            }
+        }
+    }
+
+    /**
      * Modifié : utilise maintenant le toString() de Employe (qui inclut les dates)
      */
     private Option afficher(final Employe employe)
@@ -85,13 +114,10 @@ public class EmployeConsole
     {
         return new Option("Changer la date d'arrivée", "da",
                 () -> {
-                    String dateStr = getString("Nouvelle date d'arrivée (YYYY-MM-DD) : ");
                     try {
-                        LocalDate newDate = LocalDate.parse(dateStr, DATE_FORMATTER);
+                        LocalDate newDate = saisirDate("Nouvelle date d'arrivée (YYYY-MM-DD) : ", false);
                         employe.setDateArrivee(newDate); // Le setter peut lever une exception
                         System.out.println("Date d'arrivée mise à jour.");
-                    } catch (DateTimeParseException e) {
-                        System.err.println("Erreur : Format de date invalide. Utilisez YYYY-MM-DD.");
                     } catch (DateIncoherenteException e) {
                         System.err.println("Erreur de cohérence : " + e.getMessage());
                     }
@@ -107,12 +133,8 @@ public class EmployeConsole
     {
         return new Option("Changer la date de départ", "dd",
                 () -> {
-                    String dateStr = getString("Nouvelle date de départ (YYYY-MM-DD) (ou vide pour 'en poste') : ");
                     try {
-                        LocalDate newDate = null;
-                        if (dateStr != null && !dateStr.trim().isEmpty()) {
-                            newDate = LocalDate.parse(dateStr, DATE_FORMATTER);
-                        }
+                        LocalDate newDate = saisirDate("Nouvelle date de départ (YYYY-MM-DD) (ou vide pour 'en poste') : ", true);
                         employe.setDateDepart(newDate); // Le setter peut lever une exception
 
                         if (newDate == null) {
@@ -120,9 +142,6 @@ public class EmployeConsole
                         } else {
                             System.out.println("Date de départ mise à jour.");
                         }
-
-                    } catch (DateTimeParseException e) {
-                        System.err.println("Erreur : Format de date invalide. Utilisez YYYY-MM-DD.");
                     } catch (DateIncoherenteException e) {
                         System.err.println("Erreur de cohérence : " + e.getMessage());
                     }
