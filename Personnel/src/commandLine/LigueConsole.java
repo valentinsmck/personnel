@@ -2,11 +2,14 @@ package commandLine;
 
 import static commandLineMenus.rendering.examples.util.InOut.getString;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 
 import commandLineMenus.List;
 import commandLineMenus.Menu;
 import commandLineMenus.Option;
+
 
 import personnel.*;
 
@@ -97,12 +100,23 @@ public class LigueConsole
 		return new Option("ajouter un employé", "a",
 				() -> 
 				{
-					ligue.addEmploye(getString("nom : "), 
-						getString("prenom : "), getString("mail : "), 
-						getString("password : "));
-				}
+                    try
+                    {
+                        String strda = getString("Nouvelle date d'arrivée (yyyy-mm-dd) : ");
+                        String strdd = getString("Nouvelle date départ (yyyy-mm-dd) : ");
+                        ligue.addEmploye(getString("nom : "), getString("prenom : "), getString("mail : "), getString("password : "), LocalDate.parse(strda),LocalDate.parse(strdd));
+                    }
+                    catch (DateTimeParseException e)
+                    {
+                        System.out.println("La date doit être au format yyyy-mm-dd. exemple : 2000-01-01");
+                    }
+                    catch (DateInvalide e)
+                    {
+                        System.out.println(e.getMessage());
+                    }
+                }
 		);
-	}
+    }
 	
 	private Menu gererEmployes(Ligue ligue)
 	{

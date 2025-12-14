@@ -1,6 +1,7 @@
 package personnel;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 
 /**
  * Employé d'une ligue hébergée par la M2L. Certains peuvent 
@@ -16,8 +17,9 @@ public class Employe implements Serializable, Comparable<Employe>
 	private String nom, prenom, password, mail;
 	private Ligue ligue;
 	private GestionPersonnel gestionPersonnel;
+    private LocalDate dateArrivee,dateDepart;
 	
-	Employe(GestionPersonnel gestionPersonnel, Ligue ligue, String nom, String prenom, String mail, String password)
+	Employe(GestionPersonnel gestionPersonnel, Ligue ligue, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide
 	{
 		this.gestionPersonnel = gestionPersonnel;
 		this.nom = nom;
@@ -25,6 +27,8 @@ public class Employe implements Serializable, Comparable<Employe>
 		this.password = password;
 		this.mail = mail;
 		this.ligue = ligue;
+        setDateArrivee(dateArrivee);
+        setDateDepart(dateDepart);
 	}
 	
 	/**
@@ -144,6 +148,49 @@ public class Employe implements Serializable, Comparable<Employe>
 		return ligue;
 	}
 
+    /**
+     * Retourne la date d'arrivée de l'employé
+     * @return dateArrivee de l'employé
+     */
+    public String getDateArrivee()
+    {
+        return dateArrivee.toString();
+    }
+
+    /**
+     * Change la date d'arrivée de l'employé
+     * @param dateArrivee la nouvelle date d'arrivée de l'employé
+     */
+    public void setDateArrivee(LocalDate dateArrivee) throws DateInvalide
+    {
+        if(dateArrivee.isAfter(LocalDate.now()))
+        {
+            throw new DateInvalide("La date d'arrivée ne peut pas être au plus tard que la date actuelle.");
+        }
+        this.dateArrivee = dateArrivee;
+    }
+
+    /**
+     * Retourne la date de départ de l'employé
+     * @return dateDepart de l'employé
+     */
+    public String getDateDepart()
+    {
+        return dateDepart.toString();
+    }
+
+    /**
+     * Change la date de départ de l'employé
+     * @param dateDepart la nouvelle date de départ de l'employé
+     */
+    public void setDateDepart(LocalDate dateDepart) throws DateInvalide
+    {
+        if (dateDepart.isBefore(dateArrivee))
+        {
+            throw new DateInvalide("La date de départ ne peut pas être avant la date d'arrivée");
+        }
+        this.dateDepart = dateDepart;
+    }
 	/**
 	 * Supprime l'employé. Si celui-ci est un administrateur, le root
 	 * récupère les droits d'administration sur sa ligue.
@@ -174,7 +221,7 @@ public class Employe implements Serializable, Comparable<Employe>
 	@Override
 	public String toString()
 	{
-		String res = nom + " " + prenom + " " + mail + " (";
+		String res = "Nom: "+nom + " Prenom: " + prenom + " Mail: " + mail+" Date d'arrivée: "+dateArrivee + " Date de Départ: " +dateDepart + " (";
 		if (estRoot())
 			res += "super-utilisateur";
 		else
