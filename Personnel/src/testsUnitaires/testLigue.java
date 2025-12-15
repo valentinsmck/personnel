@@ -8,7 +8,7 @@ import personnel.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 
-class testLigue 
+class testLigue
 {
 	GestionPersonnel gestionPersonnel = GestionPersonnel.getGestionPersonnel();
 
@@ -67,4 +67,74 @@ class testLigue
         });
     }
 
+    /**
+     * Vérifier si le changement du nom de la ligue fonctionne.
+     * @throws SauvegardeImpossible
+     */
+    @Test
+    void TestsetNom() throws SauvegardeImpossible
+    {
+        Ligue ligue = gestionPersonnel.addLigue("Fléchettes");
+        ligue.setNom("Boxe");
+        assertEquals("Boxe", ligue.getNom());
+    }
+
+    /**
+     * Vérifier si cela retourne bien le nom de la ligue.
+     * @throws SauvegardeImpossible
+     */
+    @Test
+    void TestgetNom() throws SauvegardeImpossible
+    {
+        Ligue ligue = gestionPersonnel.addLigue("Fléchettes");
+        assertEquals(ligue.getNom(), "Fléchettes");
+    }
+
+    /**
+     * Vérifier si le changement de l'administrateur fonctionne et retourne bien le nouveau administrateur.
+     * @throws SauvegardeImpossible
+     * @throws DateInvalide
+     */
+    @Test
+    void TestChangementAdmin() throws SauvegardeImpossible,DateInvalide
+    {
+        Ligue ligue = gestionPersonnel.addLigue("Fléchettes");
+        Employe employe = ligue.addEmploye("Laporte", "Jean", "j.laporte@gmail.com", "pass",LocalDate.now(),LocalDate.now().plusDays(1));
+        /**
+         * Vérifier si le setter fonctionne
+         */
+        ligue.setAdministrateur(employe);
+        /**
+         * Vérifier si le getter fonctionne
+         */
+        assertEquals(employe, ligue.getAdministrateur());
+    }
+
+    /**
+     * Vérifier si la suppression d'une ligue fonctionne.
+     * @throws SauvegardeImpossible
+     * @throws DateInvalide
+     */
+    @Test
+    void TestRemoveLigue() throws SauvegardeImpossible,DateInvalide
+    {
+        Ligue ligue = gestionPersonnel.addLigue("Fléchettes");
+        ligue.remove();
+        assertFalse(gestionPersonnel.getLigues().contains(ligue));
+    }
+
+    /**
+     * Vérifier si supprimer l'admin fonctionne.
+     * @throws SauvegardeImpossible
+     * @throws DateInvalide
+     */
+    @Test
+    void TestRemoveAdmin() throws SauvegardeImpossible,DateInvalide
+    {
+        Ligue ligue = gestionPersonnel.addLigue("Fléchettes");
+        Employe employe = ligue.addEmploye("Laporte", "Jean", "j.laporte@gmail.com", "pass",LocalDate.now(),LocalDate.now().plusDays(1));
+        ligue.setAdministrateur(employe);
+        employe.remove();
+        assertFalse(ligue.getEmployes().contains(employe));
+    }
 }

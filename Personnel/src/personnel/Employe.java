@@ -152,9 +152,9 @@ public class Employe implements Serializable, Comparable<Employe>
      * Retourne la date d'arrivée de l'employé
      * @return dateArrivee de l'employé
      */
-    public String getDateArrivee()
+    public LocalDate getDateArrivee()
     {
-        return dateArrivee.toString();
+        return dateArrivee;
     }
 
     /**
@@ -174,9 +174,9 @@ public class Employe implements Serializable, Comparable<Employe>
      * Retourne la date de départ de l'employé
      * @return dateDepart de l'employé
      */
-    public String getDateDepart()
+    public LocalDate getDateDepart()
     {
-        return dateDepart.toString();
+        return dateDepart;
     }
 
     /**
