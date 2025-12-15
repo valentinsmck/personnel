@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 
+
 import commandLineMenus.List;
 import commandLineMenus.Menu;
 import commandLineMenus.Option;
@@ -123,31 +124,35 @@ public class LigueConsole
 		Menu menu = new Menu("Gérer les employés de " + ligue.getNom(), "e");
 		menu.add(afficherEmployes(ligue));
 		menu.add(ajouterEmploye(ligue));
-		menu.add(modifierEmploye(ligue));
-		menu.add(supprimerEmploye(ligue));
+		menu.add(selectionnerEmployes(ligue));
 		menu.addBack("q");
 		return menu;
 	}
+    private List<Employe> selectionnerEmployes(final Ligue ligue)
+    {
+        return new List<Employe>("Sélectionner un employé", "em",
+                () -> new ArrayList<>(ligue.getEmployes()),
+                (element) -> gererEmploye(element)
+        );
+    }
 
-	private List<Employe> supprimerEmploye(final Ligue ligue)
+	private Option supprimerEmploye(final Employe employe)
 	{
-		return new List<>("Supprimer un employé", "s", 
-				() -> new ArrayList<>(ligue.getEmployes()),
-				(index, element) -> {element.remove();}
-				);
+        return new Option("Supprimer", "r", () -> {employe.remove();});
 	}
+
+    private Menu gererEmploye(Employe employe)
+    {
+        Menu menu = new Menu("Gérer l'employé : " + employe.getNom(), "a");
+        menu.add(supprimerEmploye(employe));
+        menu.add(employeConsole.editerEmploye(employe));
+        menu.addBack("q");
+        return menu;
+    }
 	
 	private List<Employe> changerAdministrateur(final Ligue ligue)
 	{
 		return null;
-	}		
-
-	private List<Employe> modifierEmploye(final Ligue ligue)
-	{
-		return new List<>("Modifier un employé", "e", 
-				() -> new ArrayList<>(ligue.getEmployes()),
-				employeConsole.editerEmploye()
-				);
 	}
 	
 	private Option supprimer(Ligue ligue)
