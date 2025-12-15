@@ -18,33 +18,33 @@ public class Employe implements Serializable, Comparable<Employe>
 	private Ligue ligue;
 	private GestionPersonnel gestionPersonnel;
     private LocalDate dateArrivee,dateDepart;
-	
-	Employe(GestionPersonnel gestionPersonnel, Ligue ligue, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide
-	{
-		this.gestionPersonnel = gestionPersonnel;
-		this.nom = nom;
-		this.prenom = prenom;
-		this.password = password;
-		this.mail = mail;
-		this.ligue = ligue;
+
+    Employe(GestionPersonnel gestionPersonnel, Ligue ligue, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide
+    {
+        this.gestionPersonnel = gestionPersonnel;
+        this.nom = nom;
+        this.prenom = prenom;
+        this.password = password;
+        this.mail = mail;
+        this.ligue = ligue;
         setDateArrivee(dateArrivee);
         setDateDepart(dateDepart);
-	}
-	
+    }
+
 	/**
-	 * Retourne vrai ssi l'employé est administrateur de la ligue 
+	 * Retourne vrai ssi l'employé est administrateur de la ligue
 	 * passée en paramètre.
-	 * @return vrai ssi l'employé est administrateur de la ligue 
+	 * @return vrai ssi l'employé est administrateur de la ligue
 	 * passée en paramètre.
-	 * @param ligue la ligue pour laquelle on souhaite vérifier si this 
+	 * @param ligue la ligue pour laquelle on souhaite vérifier si this
 	 * est l'admininstrateur.
 	 */
-	
+
 	public boolean estAdmin(Ligue ligue)
 	{
 		return ligue.getAdministrateur() == this;
 	}
-	
+
 	/**
 	 * Retourne vrai ssi l'employé est le root.
 	 * @return vrai ssi l'employé est le root.
@@ -163,7 +163,7 @@ public class Employe implements Serializable, Comparable<Employe>
      */
     public void setDateArrivee(LocalDate dateArrivee) throws DateInvalide
     {
-        if(dateArrivee.isAfter(LocalDate.now()))
+        if(dateArrivee!=null && dateArrivee.isAfter(LocalDate.now()))
         {
             throw new DateInvalide("La date d'arrivée ne peut pas être au plus tard que la date actuelle.");
         }
@@ -185,7 +185,7 @@ public class Employe implements Serializable, Comparable<Employe>
      */
     public void setDateDepart(LocalDate dateDepart) throws DateInvalide
     {
-        if (dateDepart.isBefore(dateArrivee))
+        if (dateDepart!=null && dateDepart.isBefore(dateArrivee))
         {
             throw new DateInvalide("La date de départ ne peut pas être avant la date d'arrivée");
         }
