@@ -103,8 +103,10 @@ public class LigueConsole
                     try
                     {
                         String strda = getString("Nouvelle date d'arrivée (yyyy-mm-dd) : ");
+                        LocalDate dateArrivee = LocalDate.parse(strda);
                         String strdd = getString("Nouvelle date départ (yyyy-mm-dd) : ");
-                        ligue.addEmploye(getString("nom : "), getString("prenom : "), getString("mail : "), getString("password : "), LocalDate.parse(strda),LocalDate.parse(strdd));
+                        LocalDate dateDepart = LocalDate.parse(strdd);
+                        ligue.addEmploye(getString("nom : "), getString("prenom : "), getString("mail : "), getString("password : "), dateArrivee, dateDepart);
                     }
                     catch (DateTimeParseException e)
                     {
