@@ -18,10 +18,18 @@ public class Employe implements Serializable, Comparable<Employe>
 	private Ligue ligue;
 	private GestionPersonnel gestionPersonnel;
     private LocalDate dateArrivee,dateDepart;
+	private int id = -1;
 
-    Employe(GestionPersonnel gestionPersonnel, Ligue ligue, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide
+    Employe(GestionPersonnel gestionPersonnel, Ligue ligue, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide, SauvegardeImpossible
+    {
+        this(gestionPersonnel, -1, ligue, nom, prenom, mail, password, dateArrivee, dateDepart);
+        this.id = gestionPersonnel.insert(this);
+    }
+
+    Employe(GestionPersonnel gestionPersonnel, int id, Ligue ligue, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide
     {
         this.gestionPersonnel = gestionPersonnel;
+        this.id = id;
         this.nom = nom;
         this.prenom = prenom;
         this.password = password;
@@ -116,6 +124,20 @@ public class Employe implements Serializable, Comparable<Employe>
 	}
 
 	/**
+	 * Retourne l'id de l'employé.
+	 * @return l'id de l'employé.
+	*/
+
+	 public int getId() { return id; }
+
+	/**
+	 * Change l'id de l'employé.
+	 * @param id le nouveau id de l'employé.
+	 */
+
+	public void setId(int id) { this.id = id; }
+
+	/**
 	 * Retourne vrai ssi le password passé en paramètre est bien celui
 	 * de l'employé.
 	 * @return vrai ssi le password passé en paramètre est bien celui
@@ -136,6 +158,16 @@ public class Employe implements Serializable, Comparable<Employe>
 	public void setPassword(String password)
 	{
 		this.password= password;
+	}
+
+	/**
+	 * Retourne le password de l'employé.
+	 * @return le password de l'employé.
+	 */
+
+	public String getPassword()
+	{
+		return password;
 	}
 
 	/**

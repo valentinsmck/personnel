@@ -49,13 +49,14 @@ public class GestionPersonnel implements Serializable
 			throw new RuntimeException("Vous ne pouvez créer qu'une seuls instance de cet objet.");
 		ligues = new TreeSet<>();
 		gestionPersonnel = this;
-        try {
-            this.root= new Employe(this, null, "root", "", "", "toor", null,null);
-        }
-        catch (DateInvalide e)
-        {
-            System.out.println(e.getMessage());
-        }
+		try
+		{
+			addRoot("root", "toor");
+		}
+		catch (SauvegardeImpossible e)
+		{
+			System.out.println(e.getMessage());
+		}
 	}
 	
 	public void sauvegarder() throws SauvegardeImpossible
@@ -112,6 +113,11 @@ public class GestionPersonnel implements Serializable
 		return passerelle.insert(ligue);
 	}
 
+	int insert(Employe employe) throws SauvegardeImpossible
+	{
+		return passerelle.insert(employe);
+	}
+
 	/**
 	 * Retourne le root (super-utilisateur).
 	 * @return le root.
@@ -120,5 +126,24 @@ public class GestionPersonnel implements Serializable
 	public Employe getRoot()
 	{
 		return root;
+	}
+
+	/**
+	 * Crée le root à partir de son nom et de son mot de passe,
+	 * puis l'affecte à la variable d'instance root.
+	 * @param nom le nom du root.
+	 * @param password le mot de passe du root.
+	 */
+	public void addRoot(String nom, String password) throws SauvegardeImpossible
+	{
+		try
+		{
+			this.root = new Employe(this, null, nom, "", "", password, null, null);
+		}
+		catch (DateInvalide e)
+		{
+			// Pas de date, pas d'exception possible
+			System.out.println(e.getMessage());
+		}
 	}
 }
