@@ -38,7 +38,17 @@ public class GestionPersonnel implements Serializable
 		{
 			gestionPersonnel = passerelle.getGestionPersonnel();
 			if (gestionPersonnel == null)
+			{
 				gestionPersonnel = new GestionPersonnel();
+				try
+				{
+					gestionPersonnel.addRoot("root", "toor");
+				}
+				catch (SauvegardeImpossible e)
+				{
+					System.out.println(e.getMessage());
+				}
+			}
 		}
 		return gestionPersonnel;
 	}
@@ -49,14 +59,6 @@ public class GestionPersonnel implements Serializable
 			throw new RuntimeException("Vous ne pouvez créer qu'une seuls instance de cet objet.");
 		ligues = new TreeSet<>();
 		gestionPersonnel = this;
-		try
-		{
-			addRoot("root", "toor");
-		}
-		catch (SauvegardeImpossible e)
-		{
-			System.out.println(e.getMessage());
-		}
 	}
 	
 	public void sauvegarder() throws SauvegardeImpossible
@@ -143,6 +145,23 @@ public class GestionPersonnel implements Serializable
 		catch (DateInvalide e)
 		{
 			// Pas de date, pas d'exception possible
+			System.out.println(e.getMessage());
+		}
+	}
+
+	/**
+	 * Crée le root à partir de données lues en base,
+	 * puis l'affecte à la variable d'instance root.
+	 */
+	public void addRoot(int id, String nom, String prenom, String mail, String password,
+			LocalDate dateArrivee, LocalDate dateDepart)
+	{
+		try
+		{
+			this.root = new Employe(this, id, null, nom, prenom, mail, password, dateArrivee, dateDepart);
+		}
+		catch (DateInvalide e)
+		{
 			System.out.println(e.getMessage());
 		}
 	}
