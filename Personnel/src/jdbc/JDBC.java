@@ -41,26 +41,8 @@ public class JDBC implements Passerelle
 			ResultSet ligues = instruction.executeQuery(requete);
 			while (ligues.next())
 				gestionPersonnel.addLigue(ligues.getInt(1), ligues.getString(2));
-
-			requete = "select id, nom, prenom, mail, password, date_arrivee, date_depart from employe where id_ligue is null limit 1";
-			ResultSet roots = instruction.executeQuery(requete);
-			if (roots.next())
-			{
-				gestionPersonnel.addRoot(
-						roots.getInt("id"),
-						roots.getString("nom"),
-						roots.getString("prenom"),
-						roots.getString("mail"),
-						roots.getString("password"),
-						roots.getDate("date_arrivee") != null ? roots.getDate("date_arrivee").toLocalDate() : null,
-						roots.getDate("date_depart") != null ? roots.getDate("date_depart").toLocalDate() : null);
-			}
-			else
-			{
-				gestionPersonnel.addRoot("root", "toor");
-			}
 		}
-		catch (SQLException | SauvegardeImpossible e)
+		catch (SQLException e)
 		{
 			System.out.println(e);
 		}
@@ -84,36 +66,6 @@ public class JDBC implements Passerelle
 		{
 			throw new SauvegardeImpossible(e);
 		}
-	}
-	@Override
-	public int insert(Employe employe) throws SauvegardeImpossible
-	{
-		try 
-		{
-			PreparedStatement instruction;
-			instruction = connection.prepareStatement(
-				"insert into employe (nom, prenom, mail, password, date_arrivee, date_depart, id_ligue) values(?, ?, ?, ?, ?, ?, ?)", 
-				Statement.RETURN_GENERATED_KEYS);
-			instruction.setString(1, employe.getNom());
-			instruction.setString(2, employe.getPrenom());
-			instruction.setString(3, employe.getMail());
-			instruction.setString(4, employe.getPassword());
-			instruction.setObject(5, employe.getDateArrivee());
-			instruction.setObject(6, employe.getDateDepart());
-			if (employe.getLigue() != null)
-				instruction.setInt(7, employe.getLigue().getId());
-			else
-				instruction.setNull(7, java.sql.Types.INTEGER);
-			instruction.executeUpdate();
-			ResultSet id = instruction.getGeneratedKeys();
-			id.next();
-			return id.getInt(1);
-		} 
-		catch (SQLException exception) 
-		{
-			exception.printStackTrace();
-			throw new SauvegardeImpossible(exception);
-		}		
 	}
 	
 	@Override
