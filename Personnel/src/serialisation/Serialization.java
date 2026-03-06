@@ -57,4 +57,10 @@ public class Serialization implements personnel.Passerelle
 	{
 		return -1;
 	}
+
+	@Override
+	public int update(Ligue ligue) throws SauvegardeImpossible
+	{
+		return -1;
+	}
 }
