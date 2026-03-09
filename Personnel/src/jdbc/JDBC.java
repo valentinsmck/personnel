@@ -36,17 +36,17 @@ public class JDBC implements Passerelle
 		GestionPersonnel gestionPersonnel = new GestionPersonnel();
 		try
 		{
-			String requete = "select * from ligue";
+			String requete = "select * from LIGUE";
 			Statement instruction = connection.createStatement();
 			ResultSet ligues = instruction.executeQuery(requete);
 
-			String reqEmp = "select * from employe where id_ligue = ?";
+			String reqEmp = "select * from EMPLOYE where id_ligue = ?";
 			PreparedStatement psEmp = connection.prepareStatement(reqEmp);
 
 			while (ligues.next())
 			{
-				int idLigue = ligues.getInt(1);
-				Ligue ligue = gestionPersonnel.addLigue(idLigue, ligues.getString(2));
+				int idLigue = ligues.getInt("id_ligue");
+				Ligue ligue = gestionPersonnel.addLigue(idLigue, ligues.getString("nom_ligue"));
 
 				// On charge les employés pour cette ligue
 				psEmp.setInt(1, idLigue);
@@ -55,14 +55,14 @@ public class JDBC implements Passerelle
 					while (rsEmp.next())
 					{
 						Employe e = new Employe(gestionPersonnel,
-								rsEmp.getInt("id"),
+								rsEmp.getInt("id_employe"),
 								ligue,
-								rsEmp.getString("nom"),
-								rsEmp.getString("prenom"),
-								rsEmp.getString("mail"),
-								rsEmp.getString("password"),
-								rsEmp.getDate("date_arrivee") != null ? rsEmp.getDate("date_arrivee").toLocalDate() : null,
-								rsEmp.getDate("date_depart") != null ? rsEmp.getDate("date_depart").toLocalDate() : null
+								rsEmp.getString("nom_employe"),
+								rsEmp.getString("prenom_employe"),
+								rsEmp.getString("mail_employe"),
+								rsEmp.getString("password_employe"),
+								rsEmp.getDate("date_arrivee_employe") != null ? rsEmp.getDate("date_arrivee_employe").toLocalDate() : null,
+								rsEmp.getString("date_départ_employe") != null && !rsEmp.getString("date_départ_employe").isEmpty() ? java.time.LocalDate.parse(rsEmp.getString("date_départ_employe")) : null
 						);
 						ligue.add(e);
 					}
@@ -70,18 +70,18 @@ public class JDBC implements Passerelle
 			}
 
 			// 2. Chargement du Root
-			requete = "select id, nom, prenom, mail, password, date_arrivee, date_depart from employe where id_ligue is null limit 1";
+			requete = "select id_employe, nom_employe, prenom_employe, mail_employe, password_employe, date_arrivee_employe, date_départ_employe from EMPLOYE where id_ligue is null limit 1";
 			ResultSet roots = instruction.executeQuery(requete);
 			if (roots.next())
 			{
 				gestionPersonnel.addRoot(
-						roots.getInt("id"),
-						roots.getString("nom"),
-						roots.getString("prenom"),
-						roots.getString("mail"),
-						roots.getString("password"),
-						roots.getDate("date_arrivee") != null ? roots.getDate("date_arrivee").toLocalDate() : null,
-						roots.getDate("date_depart") != null ? roots.getDate("date_depart").toLocalDate() : null);
+						roots.getInt("id_employe"),
+						roots.getString("nom_employe"),
+						roots.getString("prenom_employe"),
+						roots.getString("mail_employe"),
+						roots.getString("password_employe"),
+						roots.getDate("date_arrivee_employe") != null ? roots.getDate("date_arrivee_employe").toLocalDate() : null,
+						roots.getString("date_départ_employe") != null && !roots.getString("date_départ_employe").isEmpty() ? java.time.LocalDate.parse(roots.getString("date_départ_employe")) : null);
 			}
 			else
 			{
@@ -120,7 +120,7 @@ public class JDBC implements Passerelle
 		{
 			PreparedStatement instruction;
 			instruction = connection.prepareStatement(
-				"insert into employe (nom, prenom, mail, password, date_arrivee, date_depart, id_ligue) values(?, ?, ?, ?, ?, ?, ?)", 
+				"insert into EMPLOYE (nom_employe, prenom_employe, mail_employe, password_employe, date_arrivee_employe, date_départ_employe, id_ligue) values(?, ?, ?, ?, ?, ?, ?)", 
 				Statement.RETURN_GENERATED_KEYS);
 			instruction.setString(1, employe.getNom());
 			instruction.setString(2, employe.getPrenom());
@@ -150,7 +150,7 @@ public class JDBC implements Passerelle
 		try 
 		{
 			PreparedStatement instruction;
-			instruction = connection.prepareStatement("insert into ligue (nom) values(?)", Statement.RETURN_GENERATED_KEYS);
+			instruction = connection.prepareStatement("insert into LIGUE (nom_ligue) values(?)", Statement.RETURN_GENERATED_KEYS);
 			instruction.setString(1, ligue.getNom());		
 			instruction.executeUpdate();
 			ResultSet id = instruction.getGeneratedKeys();
@@ -170,7 +170,7 @@ public class JDBC implements Passerelle
 		try
 		{
 			PreparedStatement instruction;
-			instruction = connection.prepareStatement("update ligue set nom = ? where id = ?");
+			instruction = connection.prepareStatement("update LIGUE set nom_ligue = ? where id_ligue = ?");
 			instruction.setString(1, ligue.getNom());
 			instruction.setInt(2, ligue.getId());
 			return instruction.executeUpdate();
