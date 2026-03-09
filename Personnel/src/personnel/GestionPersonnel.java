@@ -174,4 +174,8 @@ public class GestionPersonnel implements Serializable
 			System.out.println(e.getMessage());
 		}
 	}
+	public int update(Employe employe) throws SauvegardeImpossible
+	{
+		return passerelle.update(employe);
+	}
 }
