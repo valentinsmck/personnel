@@ -99,18 +99,26 @@ public class Ligue implements Serializable, Comparable<Ligue>
         if (administrateur != root && administrateur.getLigue() != this)
             throw new DroitsInsuffisants();
 
-        // On récupère l'ancien admin pour mettre à jour son rôle en base plus tard
+        /** On mémorise l'ancien admin pour mettre à jour son rôle en base */
         Employe ancienAdmin = this.administrateur;
         this.administrateur = administrateur;
 
-        // Mise à jour de la ligue
-        gestionPersonnel.update(this);
+        /** Mise à jour de l'ancien admin (il redevient simple employé en base) **/
+        if (ancienAdmin != null && ancienAdmin != root)
+            gestionPersonnel.update(ancienAdmin);
 
-        // Mise à jour des rôles des employés concernés en base de données
-        if (ancienAdmin != null) gestionPersonnel.update(ancienAdmin);
-        if (administrateur != null) gestionPersonnel.update(administrateur);
+        /** Mise à jour du nouvel admin (il reçoit le rôle admin en base) **/
+        if (administrateur != null && administrateur != root)
+            gestionPersonnel.update(administrateur);
+
+        /** Mise à jour de la ligue **/
+        gestionPersonnel.update(this);
     }
 
+    /**
+     * Définit l'administrateur sans sauvegarder en base de données.
+     * Utilisé exclusivement par la couche de persistance (JDBC) lors du chargement.
+     */
     public void setAdministrateurFromJDBC(Employe administrateur)
     {
         this.administrateur = administrateur;

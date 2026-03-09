@@ -10,50 +10,40 @@ import java.time.LocalDate;
 
 import personnel.*;
 
-public class JDBC implements Passerelle
-{
+public class JDBC implements Passerelle {
     Connection connection;
 
-    public JDBC()
-    {
-        try
-        {
+    public JDBC() {
+        try {
             Class.forName(Credentials.getDriverClassName());
             connection = DriverManager.getConnection(Credentials.getUrl(), Credentials.getUser(), Credentials.getPassword());
-        }
-        catch (ClassNotFoundException e)
-        {
+        } catch (ClassNotFoundException e) {
             System.out.println("Pilote JDBC non installé.");
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             System.out.println(e);
         }
     }
 
     @Override
-    public GestionPersonnel getGestionPersonnel()
-    {
+    public GestionPersonnel getGestionPersonnel() {
         GestionPersonnel gestionPersonnel = new GestionPersonnel();
-        try
-        {
-            String requete = "SELECT * FROM LIGUE";
+        try {
+            /** Chargement des ligues */
+            String requete = "select * from LIGUE";
             Statement instruction = connection.createStatement();
             ResultSet ligues = instruction.executeQuery(requete);
 
-            String reqEmp = "SELECT * FROM EMPLOYE WHERE id_ligue = ?";
+            String reqEmp = "select * from EMPLOYE where id_ligue = ?";
             PreparedStatement psEmp = connection.prepareStatement(reqEmp);
 
-            while (ligues.next())
-            {
+            while (ligues.next()) {
                 int idLigue = ligues.getInt("id_ligue");
                 Ligue ligue = gestionPersonnel.addLigue(idLigue, ligues.getString("nom_ligue"));
 
+                /** Chargement des employés de la ligue */
                 psEmp.setInt(1, idLigue);
-                try (ResultSet rsEmp = psEmp.executeQuery())
-                {
-                    while (rsEmp.next())
-                    {
+                try (ResultSet rsEmp = psEmp.executeQuery()) {
+                    while (rsEmp.next()) {
                         int idEmp = rsEmp.getInt("id_employe");
                         String role = rsEmp.getString("rôle_employe");
 
@@ -70,18 +60,18 @@ public class JDBC implements Passerelle
                         );
                         ligue.add(e);
 
-                        if ("admin".equalsIgnoreCase(role))
-                        {
+                        /** Si le rôle en base est admin, on définit l'administrateur de l'objet Ligue */
+                        if ("admin".equalsIgnoreCase(role)) {
                             ligue.setAdministrateurFromJDBC(e);
                         }
                     }
                 }
             }
 
-            requete = "SELECT * FROM EMPLOYE WHERE id_ligue IS NULL LIMIT 1";
+            /** Chargement du Root */
+            requete = "select * from EMPLOYE where id_ligue is null limit 1";
             ResultSet roots = instruction.executeQuery(requete);
-            if (roots.next())
-            {
+            if (roots.next()) {
                 gestionPersonnel.addRoot(
                         roots.getInt("id_employe"),
                         roots.getString("nom_employe"),
@@ -91,148 +81,121 @@ public class JDBC implements Passerelle
                         roots.getDate("date_arrivee_employe") != null ? roots.getDate("date_arrivee_employe").toLocalDate() : null,
                         roots.getString("date_départ_employe") != null && !roots.getString("date_départ_employe").isEmpty()
                                 ? LocalDate.parse(roots.getString("date_départ_employe")) : null);
-            }
-            else
-            {
+            } else {
                 gestionPersonnel.addRoot("root", "toor");
             }
-        }
-        catch (SQLException | SauvegardeImpossible | DateInvalide e)
-        {
+        } catch (SQLException | SauvegardeImpossible | DateInvalide e) {
             System.out.println(e);
         }
         return gestionPersonnel;
     }
 
     @Override
-    public void sauvegarderGestionPersonnel(GestionPersonnel gestionPersonnel) throws SauvegardeImpossible
-    {
+    public void sauvegarderGestionPersonnel(GestionPersonnel gestionPersonnel) throws SauvegardeImpossible {
         close();
     }
 
-    public void close() throws SauvegardeImpossible
-    {
-        try
-        {
+    public void close() throws SauvegardeImpossible {
+        try {
             if (connection != null)
                 connection.close();
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             throw new SauvegardeImpossible(e);
         }
     }
 
     @Override
-    public int insert(Employe employe) throws SauvegardeImpossible
-    {
-        try
-        {
-            PreparedStatement ps = connection.prepareStatement(
-                    "INSERT INTO EMPLOYE (nom_employe, prenom_employe, mail_employe, password_employe, date_arrivee_employe, date_départ_employe, id_ligue, rôle_employe) VALUES(?, ?, ?, ?, ?, ?, ?, ?)",
+    public int insert(Employe employe) throws SauvegardeImpossible {
+        try {
+            PreparedStatement instruction = connection.prepareStatement(
+                    "insert into EMPLOYE (nom_employe, prenom_employe, mail_employe, password_employe, date_arrivee_employe, date_départ_employe, id_ligue, rôle_employe) values(?, ?, ?, ?, ?, ?, ?, ?)",
                     Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, employe.getNom());
-            ps.setString(2, employe.getPrenom());
-            ps.setString(3, employe.getMail());
-            ps.setString(4, employe.getPassword());
-            ps.setObject(5, employe.getDateArrivee());
-            ps.setString(6, employe.getDateDepart() != null ? employe.getDateDepart().toString() : null);
+            instruction.setString(1, employe.getNom());
+            instruction.setString(2, employe.getPrenom());
+            instruction.setString(3, employe.getMail());
+            instruction.setString(4, employe.getPassword());
+            instruction.setObject(5, employe.getDateArrivee());
+            instruction.setString(6, employe.getDateDepart() != null ? employe.getDateDepart().toString() : null);
 
             if (employe.getLigue() != null)
-                ps.setInt(7, employe.getLigue().getId());
+                instruction.setInt(7, employe.getLigue().getId());
             else
-                ps.setNull(7, java.sql.Types.INTEGER);
+                instruction.setNull(7, java.sql.Types.INTEGER);
 
-            ps.setString(8, (employe.getLigue() != null && employe.estAdmin(employe.getLigue())) ? "admin" : "employe");
+            /** Définition du rôle lors de l'insertion */
+            instruction.setString(8, (employe.getLigue() != null && employe.estAdmin(employe.getLigue())) ? "admin" : "employe");
 
-            ps.executeUpdate();
-            ResultSet id = ps.getGeneratedKeys();
+            instruction.executeUpdate();
+            ResultSet id = instruction.getGeneratedKeys();
             id.next();
             return id.getInt(1);
-        }
-        catch (SQLException e)
-        {
-            throw new SauvegardeImpossible(e);
+        } catch (SQLException exception) {
+            throw new SauvegardeImpossible(exception);
         }
     }
 
     @Override
-    public int insert(Ligue ligue) throws SauvegardeImpossible
-    {
-        try
-        {
-            PreparedStatement ps = connection.prepareStatement("INSERT INTO LIGUE (nom_ligue) VALUES(?)", Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, ligue.getNom());
-            ps.executeUpdate();
-            ResultSet id = ps.getGeneratedKeys();
+    public int insert(Ligue ligue) throws SauvegardeImpossible {
+        try {
+            PreparedStatement instruction = connection.prepareStatement("insert into LIGUE (nom_ligue) values(?)", Statement.RETURN_GENERATED_KEYS);
+            instruction.setString(1, ligue.getNom());
+            instruction.executeUpdate();
+            ResultSet id = instruction.getGeneratedKeys();
             id.next();
             return id.getInt(1);
-        }
-        catch (SQLException e)
-        {
-            throw new SauvegardeImpossible(e);
+        } catch (SQLException exception) {
+            throw new SauvegardeImpossible(exception);
         }
     }
 
     @Override
-    public int update(Ligue ligue) throws SauvegardeImpossible
-    {
-        try
-        {
-            PreparedStatement ps = connection.prepareStatement("UPDATE LIGUE SET nom_ligue = ? WHERE id_ligue = ?");
-            ps.setString(1, ligue.getNom());
-            ps.setInt(2, ligue.getId());
-            return ps.executeUpdate();
-        }
-        catch (SQLException e)
-        {
-            throw new SauvegardeImpossible(e);
+    public int update(Ligue ligue) throws SauvegardeImpossible {
+        try {
+            PreparedStatement instruction = connection.prepareStatement("update LIGUE set nom_ligue = ? where id_ligue = ?");
+            instruction.setString(1, ligue.getNom());
+            instruction.setInt(2, ligue.getId());
+            return instruction.executeUpdate();
+        } catch (SQLException exception) {
+            throw new SauvegardeImpossible(exception);
         }
     }
 
     @Override
-    public int update(Employe employe) throws SauvegardeImpossible
-    {
-        try
-        {
-            PreparedStatement ps = connection.prepareStatement(
-                    "UPDATE EMPLOYE SET nom_employe = ?, prenom_employe = ?, mail_employe = ?, password_employe = ?, date_arrivee_employe = ?, date_départ_employe = ?, id_ligue = ?, rôle_employe = ? WHERE id_employe = ?"
+    public int update(Employe employe) throws SauvegardeImpossible {
+        try {
+            PreparedStatement instruction = connection.prepareStatement(
+                    "update EMPLOYE set nom_employe = ?, prenom_employe = ?, mail_employe = ?, password_employe = ?, date_arrivee_employe = ?, date_départ_employe = ?, id_ligue = ?, rôle_employe = ? where id_employe = ?"
             );
-            ps.setString(1, employe.getNom());
-            ps.setString(2, employe.getPrenom());
-            ps.setString(3, employe.getMail());
-            ps.setString(4, employe.getPassword());
-            ps.setObject(5, employe.getDateArrivee());
-            ps.setString(6, employe.getDateDepart() != null ? employe.getDateDepart().toString() : null);
+            instruction.setString(1, employe.getNom());
+            instruction.setString(2, employe.getPrenom());
+            instruction.setString(3, employe.getMail());
+            instruction.setString(4, employe.getPassword());
+            instruction.setObject(5, employe.getDateArrivee());
+            instruction.setString(6, employe.getDateDepart() != null ? employe.getDateDepart().toString() : null);
 
             if (employe.getLigue() != null)
-                ps.setInt(7, employe.getLigue().getId());
+                instruction.setInt(7, employe.getLigue().getId());
             else
-                ps.setNull(7, java.sql.Types.INTEGER);
+                instruction.setNull(7, java.sql.Types.INTEGER);
 
-            ps.setString(8, (employe.getLigue() != null && employe.estAdmin(employe.getLigue())) ? "admin" : "employe");
-            ps.setInt(9, employe.getId());
+            /** Mise à jour dynamique du rôle selon l'état de l'objet */
+            instruction.setString(8, (employe.getLigue() != null && employe.estAdmin(employe.getLigue())) ? "admin" : "employe");
+            instruction.setInt(9, employe.getId());
 
-            return ps.executeUpdate();
-        }
-        catch (SQLException e)
-        {
-            throw new SauvegardeImpossible(e);
+            return instruction.executeUpdate();
+        } catch (SQLException exception) {
+            throw new SauvegardeImpossible(exception);
         }
     }
 
     @Override
-    public int delete(Employe employe) throws SauvegardeImpossible
-    {
-        try
-        {
-            PreparedStatement ps = connection.prepareStatement("DELETE FROM EMPLOYE WHERE id_employe = ?");
-            ps.setInt(1, employe.getId());
-            return ps.executeUpdate();
-        }
-        catch (SQLException e)
-        {
-            throw new SauvegardeImpossible(e);
+    public int delete(Employe employe) throws SauvegardeImpossible {
+        try {
+            PreparedStatement instruction = connection.prepareStatement("delete from EMPLOYE where id_employe = ?");
+            instruction.setInt(1, employe.getId());
+            return instruction.executeUpdate();
+        } catch (SQLException exception) {
+            throw new SauvegardeImpossible(exception);
         }
     }
 }
