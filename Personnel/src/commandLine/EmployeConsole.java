@@ -7,6 +7,7 @@ import commandLineMenus.Menu;
 import commandLineMenus.Option;
 import personnel.DateInvalide;
 import personnel.Employe;
+import personnel.SauvegardeImpossible;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
