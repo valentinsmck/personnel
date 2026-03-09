@@ -62,7 +62,7 @@ public class JDBC implements Passerelle
 								rsEmp.getString("mail_employe"),
 								rsEmp.getString("password_employe"),
 								rsEmp.getDate("date_arrivee_employe") != null ? rsEmp.getDate("date_arrivee_employe").toLocalDate() : null,
-								rsEmp.getDate("date_départ_employe") != null ? rsEmp.getDate("date_départ_employe").toLocalDate() : null
+								rsEmp.getString("date_départ_employe") != null && !rsEmp.getString("date_départ_employe").isEmpty() ? java.time.LocalDate.parse(rsEmp.getString("date_départ_employe")) : null
 						);
 						ligue.add(e);
 					}
@@ -81,7 +81,7 @@ public class JDBC implements Passerelle
 						roots.getString("mail_employe"),
 						roots.getString("password_employe"),
 						roots.getDate("date_arrivee_employe") != null ? roots.getDate("date_arrivee_employe").toLocalDate() : null,
-						roots.getDate("date_départ_employe") != null ? roots.getDate("date_départ_employe").toLocalDate() : null);
+						roots.getString("date_départ_employe") != null && !roots.getString("date_départ_employe").isEmpty() ? java.time.LocalDate.parse(roots.getString("date_départ_employe")) : null);
 			}
 			else
 			{
