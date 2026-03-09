@@ -29,19 +29,47 @@ public class JDBC implements Passerelle
 			System.out.println(e);
 		}
 	}
-	
+
 	@Override
-	public GestionPersonnel getGestionPersonnel() 
+	public GestionPersonnel getGestionPersonnel()
 	{
 		GestionPersonnel gestionPersonnel = new GestionPersonnel();
-		try 
+		try
 		{
 			String requete = "select * from ligue";
 			Statement instruction = connection.createStatement();
 			ResultSet ligues = instruction.executeQuery(requete);
-			while (ligues.next())
-				gestionPersonnel.addLigue(ligues.getInt(1), ligues.getString(2));
 
+			String reqEmp = "select * from employe where id_ligue = ?";
+			PreparedStatement psEmp = connection.prepareStatement(reqEmp);
+
+			while (ligues.next())
+			{
+				int idLigue = ligues.getInt(1);
+				Ligue ligue = gestionPersonnel.addLigue(idLigue, ligues.getString(2));
+
+				// On charge les employés pour cette ligue
+				psEmp.setInt(1, idLigue);
+				try (ResultSet rsEmp = psEmp.executeQuery())
+				{
+					while (rsEmp.next())
+					{
+						Employe e = new Employe(gestionPersonnel,
+								rsEmp.getInt("id"),
+								ligue,
+								rsEmp.getString("nom"),
+								rsEmp.getString("prenom"),
+								rsEmp.getString("mail"),
+								rsEmp.getString("password"),
+								rsEmp.getDate("date_arrivee") != null ? rsEmp.getDate("date_arrivee").toLocalDate() : null,
+								rsEmp.getDate("date_depart") != null ? rsEmp.getDate("date_depart").toLocalDate() : null
+						);
+						ligue.add(e);
+					}
+				}
+			}
+
+			// 2. Chargement du Root
 			requete = "select id, nom, prenom, mail, password, date_arrivee, date_depart from employe where id_ligue is null limit 1";
 			ResultSet roots = instruction.executeQuery(requete);
 			if (roots.next())
@@ -60,7 +88,7 @@ public class JDBC implements Passerelle
 				gestionPersonnel.addRoot("root", "toor");
 			}
 		}
-		catch (SQLException | SauvegardeImpossible e)
+		catch (SQLException | SauvegardeImpossible | DateInvalide e)
 		{
 			System.out.println(e);
 		}
