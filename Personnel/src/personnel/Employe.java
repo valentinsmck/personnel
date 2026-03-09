@@ -26,18 +26,18 @@ public class Employe implements Serializable, Comparable<Employe>
         this.id = gestionPersonnel.insert(this);
     }
 
-    Employe(GestionPersonnel gestionPersonnel, int id, Ligue ligue, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide
-    {
-        this.gestionPersonnel = gestionPersonnel;
-        this.id = id;
-        this.nom = nom;
-        this.prenom = prenom;
-        this.password = password;
-        this.mail = mail;
-        this.ligue = ligue;
-        setDateArrivee(dateArrivee);
-        setDateDepart(dateDepart);
-    }
+	public Employe(GestionPersonnel gestionPersonnel, int id, Ligue ligue, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide
+	{
+		this.gestionPersonnel = gestionPersonnel;
+		this.id = id;
+		this.nom = nom;
+		this.prenom = prenom;
+		this.password = password;
+		this.mail = mail;
+		this.ligue = ligue;
+		setDateArrivee(dateArrivee);
+		setDateDepart(dateDepart);
+	}
 
 	/**
 	 * Retourne vrai ssi l'employé est administrateur de la ligue
