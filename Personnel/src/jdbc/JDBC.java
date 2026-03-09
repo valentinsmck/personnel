@@ -181,4 +181,81 @@ public class JDBC implements Passerelle
 			throw new SauvegardeImpossible(exception);
 		}
 	}
+
+    @Override
+    public int update(Employe employe) throws SauvegardeImpossible
+    {
+        try
+        {
+            PreparedStatement instruction = connection.prepareStatement(
+                    "UPDATE employe SET nom = ?, prenom = ?, mail = ?, password = ?, date_arrivee = ?, date_depart = ?, id_ligue = ? WHERE id = ?"
+            );
+            instruction.setString(1, employe.getNom());
+            instruction.setString(2, employe.getPrenom());
+            instruction.setString(3, employe.getMail());
+            instruction.setString(4, employe.getPassword());
+            instruction.setObject(5, employe.getDateArrivee());
+            instruction.setObject(6, employe.getDateDepart());
+
+            if (employe.getLigue() != null)
+                instruction.setInt(7, employe.getLigue().getId());
+            else
+                instruction.setNull(7, java.sql.Types.INTEGER);
+
+            instruction.setInt(8, employe.getId());
+
+            return instruction.executeUpdate();
+        }
+        catch (SQLException exception)
+        {
+            exception.printStackTrace();
+            throw new SauvegardeImpossible(exception);
+        }
+    }
+	@Override
+	public int delete(Employe employe) throws SauvegardeImpossible
+	{
+		try
+		{
+			PreparedStatement instruction = connection.prepareStatement("DELETE FROM employe WHERE id = ?");
+			instruction.setInt(1, employe.getId());
+			return instruction.executeUpdate();
+		}
+		catch (SQLException exception)
+		{
+			exception.printStackTrace();
+			throw new SauvegardeImpossible(exception);
+		}
+	}
+	@Override
+	public int update(Employe employe) throws SauvegardeImpossible
+	{
+		try
+		{
+			PreparedStatement instruction = connection.prepareStatement(
+					"UPDATE employe SET nom = ?, prenom = ?, mail = ?, password = ?, date_arrivee = ?, date_depart = ?, id_ligue = ? WHERE id = ?"
+			);
+			instruction.setString(1, employe.getNom());
+			instruction.setString(2, employe.getPrenom());
+			instruction.setString(3, employe.getMail());
+			instruction.setString(4, employe.getPassword());
+			instruction.setDate(5, employe.getDateArrivee() != null ? java.sql.Date.valueOf(employe.getDateArrivee()) : null);
+			instruction.setDate(6, employe.getDateDepart() != null ? java.sql.Date.valueOf(employe.getDateDepart()) : null);
+
+			// Gestion de la ligue (le root n'en a pas)
+			if (employe.getLigue() != null)
+				instruction.setInt(7, employe.getLigue().getId());
+			else
+				instruction.setNull(7, java.sql.Types.INTEGER);
+
+			instruction.setInt(8, employe.getId()); // La clause WHERE
+
+			return instruction.executeUpdate();
+		}
+		catch (SQLException exception)
+		{
+			exception.printStackTrace();
+			throw new SauvegardeImpossible(exception);
+		}
+	}
 }

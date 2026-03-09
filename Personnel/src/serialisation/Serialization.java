@@ -63,4 +63,14 @@ public class Serialization implements personnel.Passerelle
 	{
 		return -1;
 	}
+	@Override
+	public int delete(Employe employe) throws SauvegardeImpossible
+	{
+		return 0;
+	}
+	@Override
+	public int update(Employe employe) throws SauvegardeImpossible
+	{
+		return 0;
+	}
 }
