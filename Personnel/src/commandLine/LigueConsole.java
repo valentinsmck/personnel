@@ -116,6 +116,9 @@ public class LigueConsole
                     {
                         System.out.println(e.getMessage());
                     }
+                    catch(SauvegardeImpossible exception){
+                        System.err.println("Impossible de sauvegarder cette ligue");
+                    }
                 }
 		);
     }
