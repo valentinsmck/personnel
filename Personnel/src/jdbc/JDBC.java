@@ -41,8 +41,26 @@ public class JDBC implements Passerelle
 			ResultSet ligues = instruction.executeQuery(requete);
 			while (ligues.next())
 				gestionPersonnel.addLigue(ligues.getInt(1), ligues.getString(2));
+
+			requete = "select id, nom, prenom, mail, password, date_arrivee, date_depart from employe where id_ligue is null limit 1";
+			ResultSet roots = instruction.executeQuery(requete);
+			if (roots.next())
+			{
+				gestionPersonnel.addRoot(
+						roots.getInt("id"),
+						roots.getString("nom"),
+						roots.getString("prenom"),
+						roots.getString("mail"),
+						roots.getString("password"),
+						roots.getDate("date_arrivee") != null ? roots.getDate("date_arrivee").toLocalDate() : null,
+						roots.getDate("date_depart") != null ? roots.getDate("date_depart").toLocalDate() : null);
+			}
+			else
+			{
+				gestionPersonnel.addRoot("root", "toor");
+			}
 		}
-		catch (SQLException e)
+		catch (SQLException | SauvegardeImpossible e)
 		{
 			System.out.println(e);
 		}
@@ -116,5 +134,23 @@ public class JDBC implements Passerelle
 			exception.printStackTrace();
 			throw new SauvegardeImpossible(exception);
 		}		
+	}
+
+	@Override
+	public int update(Ligue ligue) throws SauvegardeImpossible
+	{
+		try
+		{
+			PreparedStatement instruction;
+			instruction = connection.prepareStatement("update ligue set nom = ? where id = ?");
+			instruction.setString(1, ligue.getNom());
+			instruction.setInt(2, ligue.getId());
+			return instruction.executeUpdate();
+		}
+		catch (SQLException exception)
+		{
+			exception.printStackTrace();
+			throw new SauvegardeImpossible(exception);
+		}
 	}
 }

@@ -69,9 +69,10 @@ public class Ligue implements Serializable, Comparable<Ligue>
 	 * @param nom le nouveau nom de la ligue.
 	 */
 
-	public void setNom(String nom)
+	public void setNom(String nom) throws SauvegardeImpossible
 	{
 		this.nom = nom;
+		gestionPersonnel.update(this);
 	}
 
 	/**
@@ -92,12 +93,13 @@ public class Ligue implements Serializable, Comparable<Ligue>
 	 * @param administrateur le nouvel administrateur de la ligue.
 	 */
 	
-	public void setAdministrateur(Employe administrateur)
+	public void setAdministrateur(Employe administrateur) throws SauvegardeImpossible
 	{
 		Employe root = gestionPersonnel.getRoot();
 		if (administrateur != root && administrateur.getLigue() != this)
 			throw new DroitsInsuffisants();
 		this.administrateur = administrateur;
+		gestionPersonnel.update(this);
 	}
 
 	/**

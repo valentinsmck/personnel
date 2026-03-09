@@ -131,13 +131,6 @@ public class Employe implements Serializable, Comparable<Employe>
 	 public int getId() { return id; }
 
 	/**
-	 * Change l'id de l'employé.
-	 * @param id le nouveau id de l'employé.
-	 */
-
-	public void setId(int id) { this.id = id; }
-
-	/**
 	 * Retourne vrai ssi le password passé en paramètre est bien celui
 	 * de l'employé.
 	 * @return vrai ssi le password passé en paramètre est bien celui
@@ -228,7 +221,7 @@ public class Employe implements Serializable, Comparable<Employe>
 	 * récupère les droits d'administration sur sa ligue.
 	 */
 	
-	public void remove()
+	public void remove() throws SauvegardeImpossible
 	{
 		Employe root = gestionPersonnel.getRoot();
 		if (this != root)
