@@ -84,7 +84,17 @@ public class LigueConsole
 	private Option changerNom(final Ligue ligue)
 	{
 		return new Option("Renommer", "r", 
-				() -> {ligue.setNom(getString("Nouveau nom : "));});
+				() ->
+				{
+					try
+					{
+						ligue.setNom(getString("Nouveau nom : "));
+					}
+					catch (SauvegardeImpossible e)
+					{
+						System.out.println(e.getMessage());
+					}
+				});
 	}
 
 	private List<Ligue> selectionnerLigue()
@@ -139,7 +149,17 @@ public class LigueConsole
 
 	private Option supprimerEmploye(final Employe employe)
 	{
-        return new Option("Supprimer", "r", () -> {employe.remove();});
+		return new Option("Supprimer", "r", () ->
+		{
+			try
+			{
+				employe.remove();
+			}
+			catch (SauvegardeImpossible e)
+			{
+				System.out.println(e.getMessage());
+			}
+		});
 	}
 
     private Menu gererEmploye(Employe employe)
@@ -155,7 +175,18 @@ public class LigueConsole
 	private Option changerAdministrateur(Employe employe)
 	{
         Ligue ligue = employe.getLigue();
-		return new Option("Changer Administrateur","ad", () ->{ligue.setAdministrateur(employe); System.out.println( ligue.getAdministrateur().getNom() + " est à présent l'administrateur de la ligue");});
+		return new Option("Changer Administrateur","ad", () ->
+		{
+			try
+			{
+				ligue.setAdministrateur(employe);
+				System.out.println(ligue.getAdministrateur().getNom() + " est à présent l'administrateur de la ligue");
+			}
+			catch (SauvegardeImpossible e)
+			{
+				System.out.println(e.getMessage());
+			}
+		});
 	}
 	
 	private Option supprimer(Ligue ligue)
