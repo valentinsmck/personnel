@@ -156,4 +156,9 @@ public class Ligue implements Serializable, Comparable<Ligue>
 	{
 		return nom;
 	}
+
+	public void add(Employe employe)
+	{
+		employes.add(employe);
+	}
 }

@@ -125,6 +125,11 @@ public class GestionPersonnel implements Serializable
 		return passerelle.update(ligue);
 	}
 
+    int update(Employe employe) throws SauvegardeImpossible
+    {
+        return passerelle.update(employe);
+    }
+
 	/**
 	 * Retourne le root (super-utilisateur).
 	 * @return le root.
