@@ -26,7 +26,7 @@ public class Employe implements Serializable, Comparable<Employe>
         this.id = gestionPersonnel.insert(this);
     }
 
-	public Employe(GestionPersonnel gestionPersonnel, int id, Ligue ligue, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide
+	Employe(GestionPersonnel gestionPersonnel, int id, Ligue ligue, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide
 	{
 		this.gestionPersonnel = gestionPersonnel;
 		this.id = id;

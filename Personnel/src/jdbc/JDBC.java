@@ -47,9 +47,8 @@ public class JDBC implements Passerelle {
                         int idEmp = rsEmp.getInt("id_employe");
                         String role = rsEmp.getString("rôle_employe");
 
-                        Employe e = new Employe(gestionPersonnel,
+                        Employe e = ligue.addEmploye(
                                 idEmp,
-                                ligue,
                                 rsEmp.getString("nom_employe"),
                                 rsEmp.getString("prenom_employe"),
                                 rsEmp.getString("mail_employe"),
@@ -58,9 +57,7 @@ public class JDBC implements Passerelle {
                                 rsEmp.getString("date_départ_employe") != null && !rsEmp.getString("date_départ_employe").isEmpty()
                                         ? LocalDate.parse(rsEmp.getString("date_départ_employe")) : null
                         );
-                        ligue.add(e);
 
-                        /** Si le rôle en base est admin, on définit l'administrateur de l'objet Ligue */
                         if ("admin".equalsIgnoreCase(role)) {
                             ligue.setAdministrateurFromJDBC(e);
                         }
