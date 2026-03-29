@@ -4,14 +4,24 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * Utilitaire de hachage de mots de passe.
+ *
+ * Terme technique: le hachage transforme un mot de passe en empreinte
+ * irreversible. Ici on utilise SHA-256 avec prefixe "sha256$".
+ */
 public final class PasswordHasher
 {
 	private static final String PREFIX = "sha256$";
 
+	/** Classe utilitaire: constructeur prive. */
 	private PasswordHasher()
 	{
 	}
 
+	/**
+	 * Hache un mot de passe brut au format sha256$<hex>.
+	 */
 	public static String hashPassword(String password)
 	{
 		if (password == null)
@@ -33,6 +43,10 @@ public final class PasswordHasher
 		}
 	}
 
+	/**
+	 * Normalise une valeur stockee: conserve un hash existant,
+	 * sinon hache une valeur en clair.
+	 */
 	public static String normalizeStoredPassword(String password)
 	{
 		if (password == null || password.isEmpty())
@@ -42,6 +56,10 @@ public final class PasswordHasher
 		return hashPassword(password);
 	}
 
+	/**
+	 * Verifie un mot de passe saisi contre la valeur stockee.
+	 * Compatible avec anciennes donnees non hachees.
+	 */
 	public static boolean checkPassword(String inputPassword, String storedPassword)
 	{
 		if (storedPassword == null)
@@ -51,6 +69,9 @@ public final class PasswordHasher
 		return storedPassword.equals(inputPassword);
 	}
 
+	/**
+	 * Indique si la valeur est deja un hash reconnu.
+	 */
 	private static boolean isHashed(String password)
 	{
 		return password != null && password.startsWith(PREFIX);

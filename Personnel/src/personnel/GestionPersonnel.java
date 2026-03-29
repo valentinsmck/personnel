@@ -18,6 +18,7 @@ import java.util.TreeSet;
 
 public class GestionPersonnel implements Serializable
 {
+	/** Identifiant de serialisation Java (version de classe). */
 	private static final long serialVersionUID = -105283113987886425L;
 	private static GestionPersonnel gestionPersonnel = null;
 	private SortedSet<Ligue> ligues;
@@ -53,6 +54,9 @@ public class GestionPersonnel implements Serializable
 		return gestionPersonnel;
 	}
 
+	/**
+	 * Constructeur interne (Singleton): initialise l'ensemble des ligues.
+	 */
 	public GestionPersonnel()
 	{
 		if (gestionPersonnel != null)
@@ -61,6 +65,9 @@ public class GestionPersonnel implements Serializable
 		gestionPersonnel = this;
 	}
 	
+	/**
+	 * Delegue la sauvegarde a la passerelle active (JDBC ou serialisation).
+	 */
 	public void sauvegarder() throws SauvegardeImpossible
 	{
 		passerelle.sauvegarderGestionPersonnel(this);
@@ -91,6 +98,9 @@ public class GestionPersonnel implements Serializable
 		return Collections.unmodifiableSortedSet(ligues);
 	}
 
+	/**
+	 * Cree et ajoute une ligue en persistance.
+	 */
 	public Ligue addLigue(String nom) throws SauvegardeImpossible
 	{
 		Ligue ligue = new Ligue(this, nom); 
@@ -98,6 +108,9 @@ public class GestionPersonnel implements Serializable
 		return ligue;
 	}
 	
+	/**
+	 * Ajoute une ligue deja connue en base (cas chargement JDBC).
+	 */
 	public Ligue addLigue(int id, String nom)
 	{
 		Ligue ligue = new Ligue(this, id, nom);
@@ -105,35 +118,57 @@ public class GestionPersonnel implements Serializable
 		return ligue;
 	}
 
+	/**
+	 * Retire une ligue de la collection metier (appel interne apres suppression).
+	 */
 	void remove(Ligue ligue)
 	{
 		ligues.remove(ligue);
 	}
+
+	/**
+	 * Supprime un employe via la passerelle.
+	 */
 	public void delete(Employe employe) throws SauvegardeImpossible
 	{
 		passerelle.delete(employe);
 	}
 
+	/**
+	 * Supprime une ligue via la passerelle.
+	 */
 	public void delete(Ligue ligue) throws SauvegardeImpossible
 	{
 		passerelle.delete(ligue);
 	}
 
+	/**
+	 * Insere une ligue et retourne l'id genere.
+	 */
 	int insert(Ligue ligue) throws SauvegardeImpossible
 	{
 		return passerelle.insert(ligue);
 	}
 
+	/**
+	 * Insere un employe et retourne l'id genere.
+	 */
 	int insert(Employe employe) throws SauvegardeImpossible
 	{
 		return passerelle.insert(employe);
 	}
 
+	/**
+	 * Met a jour une ligue existante.
+	 */
 	int update(Ligue ligue) throws SauvegardeImpossible
 	{
 		return passerelle.update(ligue);
 	}
 
+	/**
+	 * Met a jour un employe existant.
+	 */
     int update(Employe employe) throws SauvegardeImpossible
     {
         return passerelle.update(employe);
@@ -182,6 +217,59 @@ public class GestionPersonnel implements Serializable
 		{
 			throw new IllegalStateException("Impossible de charger le root depuis la base.", e);
 		}
+	}
+
+	/**
+	 * Recherche un compte (root ou employe) a partir d'un identifiant texte.
+	 * Identifiants supportes: root, mail, nom, nom.prenom.
+	 */
+	public Employe findEmployeByIdentifiant(String identifiant)
+	{
+		if (identifiant == null)
+			return null;
+		String normalized = identifiant.trim();
+		if (normalized.isEmpty())
+			return null;
+
+		if (matchesIdentifiant(root, normalized, true))
+			return root;
+
+		for (Ligue ligue : ligues)
+			for (Employe employe : ligue.getEmployes())
+				if (matchesIdentifiant(employe, normalized, false))
+					return employe;
+		return null;
+	}
+
+	/**
+	 * Verifie si l'identifiant texte correspond a un employe donne.
+	 */
+	private boolean matchesIdentifiant(Employe employe, String identifiant, boolean includeRootAlias)
+	{
+		if (employe == null)
+			return false;
+		if (includeRootAlias && "root".equalsIgnoreCase(identifiant))
+			return true;
+		if (equalsIgnoreCaseSafe(employe.getMail(), identifiant))
+			return true;
+		if (equalsIgnoreCaseSafe(employe.getNom(), identifiant))
+			return true;
+
+		String nom = employe.getNom() == null ? "" : employe.getNom().trim();
+		String prenom = employe.getPrenom() == null ? "" : employe.getPrenom().trim();
+		String nomPrenom = nom.isEmpty() || prenom.isEmpty() ? "" : nom + "." + prenom;
+		String prenomNom = nom.isEmpty() || prenom.isEmpty() ? "" : prenom + "." + nom;
+		return nomPrenom.equalsIgnoreCase(identifiant) || prenomNom.equalsIgnoreCase(identifiant);
+	}
+
+	/**
+	 * Comparaison de chaines insensitive a la casse avec gestion des null.
+	 */
+	private boolean equalsIgnoreCaseSafe(String left, String right)
+	{
+		if (left == null || right == null)
+			return false;
+		return left.trim().equalsIgnoreCase(right.trim());
 	}
 
 }

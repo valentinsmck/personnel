@@ -12,9 +12,19 @@ import java.util.Map;
 
 import personnel.*;
 
+/**
+ * Implementation JDBC de la passerelle de persistence.
+ *
+ * Terme technique: JDBC est l'API Java standard pour communiquer
+ * avec une base relationnelle (ici MySQL).
+ */
 public class JDBC implements Passerelle {
+	/** Connexion SQL partagee par les operations de la passerelle. */
     Connection connection;
 
+    /**
+     * Ouvre la connexion JDBC a partir des credentials locaux.
+     */
     public JDBC() {
         try {
             Class.forName(Credentials.getDriverClassName());
@@ -26,6 +36,9 @@ public class JDBC implements Passerelle {
         }
     }
 
+    /**
+     * Charge tout le graphe metier depuis la base (ligues, employes, root).
+     */
     @Override
     public GestionPersonnel getGestionPersonnel() {
         GestionPersonnel gestionPersonnel = new GestionPersonnel();
@@ -91,11 +104,18 @@ public class JDBC implements Passerelle {
         return gestionPersonnel;
     }
 
+    /**
+     * Sauvegarde globale: en mode JDBC, toutes les ecritures sont deja faites
+     * en temps reel; on ferme simplement la connexion.
+     */
     @Override
     public void sauvegarderGestionPersonnel(GestionPersonnel gestionPersonnel) throws SauvegardeImpossible {
         close();
     }
 
+    /**
+     * Ferme explicitement la connexion SQL.
+     */
     public void close() throws SauvegardeImpossible {
         try {
             if (connection != null)
@@ -105,6 +125,9 @@ public class JDBC implements Passerelle {
         }
     }
 
+    /**
+     * Insere un employe et retourne l'identifiant SQL genere.
+     */
     @Override
     public int insert(Employe employe) throws SauvegardeImpossible {
         try {
@@ -135,6 +158,9 @@ public class JDBC implements Passerelle {
         }
     }
 
+    /**
+     * Insere une ligue et retourne l'identifiant SQL genere.
+     */
     @Override
     public int insert(Ligue ligue) throws SauvegardeImpossible {
         try {
@@ -149,6 +175,9 @@ public class JDBC implements Passerelle {
         }
     }
 
+    /**
+     * Met a jour le nom d'une ligue existante.
+     */
     @Override
     public int update(Ligue ligue) throws SauvegardeImpossible {
         try {
@@ -161,6 +190,9 @@ public class JDBC implements Passerelle {
         }
     }
 
+    /**
+     * Met a jour toutes les informations d'un employe existant.
+     */
     @Override
     public int update(Employe employe) throws SauvegardeImpossible {
         try {
@@ -189,6 +221,9 @@ public class JDBC implements Passerelle {
         }
     }
 
+    /**
+     * Supprime une ligue et ses employes dans une transaction SQL.
+     */
     @Override
     public int delete(Ligue ligue) throws SauvegardeImpossible {
         int deletedLigues;
@@ -222,6 +257,9 @@ public class JDBC implements Passerelle {
         return deletedLigues;
     }
 
+    /**
+     * Supprime un employe par son identifiant SQL.
+     */
     @Override
     public int delete(Employe employe) throws SauvegardeImpossible {
         try {
@@ -233,6 +271,9 @@ public class JDBC implements Passerelle {
         }
     }
 
+    /**
+     * Parse une date optionnelle lue depuis la base.
+     */
     private LocalDate parseOptionalLocalDate(String sqlDate)
     {
         if (sqlDate == null || sqlDate.trim().isEmpty())

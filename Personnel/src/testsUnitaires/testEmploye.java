@@ -8,8 +8,12 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+/**
+ * Tests unitaires couvrant les principales operations de la classe Employe.
+ */
 public class testEmploye
 {
+    /** Point d'entree metier partage par les tests de ce fichier. */
     GestionPersonnel gestionPersonnel = GestionPersonnel.getGestionPersonnel();
 
     /**

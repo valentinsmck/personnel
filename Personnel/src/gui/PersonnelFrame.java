@@ -91,6 +91,7 @@ public class PersonnelFrame extends JFrame
 	private final List<Employe> employeRows = new ArrayList<>();
 	private Ligue currentLigue;
 	private Employe currentEmploye;
+	private Employe connectedUser;
 
 	private JTextField loginUserField;
 	private JPasswordField loginPasswordField;
@@ -103,6 +104,8 @@ public class PersonnelFrame extends JFrame
 	private JButton menuQuitButton;
 
 	private JTextArea rootInfoArea;
+	private JLabel rootPageTitleLabel;
+	private JLabel rootPageSubtitleLabel;
 	private JTextField rootNomField;
 	private JTextField rootPrenomField;
 	private JTextField rootMailField;
@@ -241,6 +244,9 @@ public class PersonnelFrame extends JFrame
 		loginUserField = createTextField();
 		loginUserField.setText("root");
 		content.add(createLabeledInput("IDENTIFIANT", loginUserField));
+		JLabel loginHintLabel = createMutedLabel("Identifiants acceptes: root, mail, nom, nom.prenom");
+		loginHintLabel.setAlignmentX(CENTER_ALIGNMENT);
+		content.add(loginHintLabel);
 
 		loginPasswordField = createPasswordField();
 		content.add(createLabeledInput("MOT DE PASSE", loginPasswordField));
@@ -333,7 +339,10 @@ public class PersonnelFrame extends JFrame
 	{
 		JPanel card = createPageCard();
 		JPanel content = createVerticalContainer(12);
-		content.add(createPageHeader("FENETRE 03", "GERER LE COMPTE ROOT", "Modification des informations du super-utilisateur"));
+
+		rootPageTitleLabel = createTitleLabel("GERER LE COMPTE ROOT");
+		rootPageSubtitleLabel = createMutedLabel("Modification des informations du super-utilisateur");
+		content.add(createTitleContainer("FENETRE 03", rootPageTitleLabel, rootPageSubtitleLabel));
 
 		rootInfoArea = createInfoArea();
 		content.add(wrapArea(rootInfoArea));
@@ -624,21 +633,23 @@ public class PersonnelFrame extends JFrame
 	}
 
 	/**
-	 * Valide la connexion root depuis la page de login.
+	 * Valide la connexion depuis la page de login (root/admin/utilisateur).
 	 */
 	private void onLoginSubmit()
 	{
 		String identifiant = loginUserField.getText().trim();
 		String password = new String(loginPasswordField.getPassword());
-		Employe root = gestionPersonnel.getRoot();
+		Employe account = findUserByIdentifiant(identifiant);
 
-		if (!"root".equalsIgnoreCase(identifiant) || !root.checkPassword(password))
+		if (account == null || !account.checkPassword(password))
 		{
 			loginErrorLabel.setText("Identifiants incorrects");
 			loginErrorLabel.setVisible(true);
 			return;
 		}
 
+		connectedUser = account;
+		initializeContextForConnectedUser();
 		loginErrorLabel.setVisible(false);
 		loginPasswordField.setText("");
 		refreshAllData();
@@ -659,6 +670,11 @@ public class PersonnelFrame extends JFrame
 	 */
 	private void onOpenLiguesPage()
 	{
+		if (!hasLigueAccess())
+		{
+			showInfo("Aucune ligue associee a votre compte.");
+			return;
+		}
 		refreshLiguesPage();
 		showPage(PAGE_LIGUES);
 	}
@@ -692,9 +708,9 @@ public class PersonnelFrame extends JFrame
 		}
 		try
 		{
-			gestionPersonnel.getRoot().setNom(value);
+			getEditableAccount().setNom(value);
 			refreshAllData();
-			showInfo("Nom root mis a jour.");
+			showInfo("Nom du compte mis a jour.");
 		}
 		catch (SauvegardeImpossible e)
 		{
@@ -715,9 +731,9 @@ public class PersonnelFrame extends JFrame
 		}
 		try
 		{
-			gestionPersonnel.getRoot().setPrenom(value);
+			getEditableAccount().setPrenom(value);
 			refreshAllData();
-			showInfo("Prenom root mis a jour.");
+			showInfo("Prenom du compte mis a jour.");
 		}
 		catch (SauvegardeImpossible e)
 		{
@@ -738,9 +754,9 @@ public class PersonnelFrame extends JFrame
 		}
 		try
 		{
-			gestionPersonnel.getRoot().setMail(value);
+			getEditableAccount().setMail(value);
 			refreshAllData();
-			showInfo("Mail root mis a jour.");
+			showInfo("Mail du compte mis a jour.");
 		}
 		catch (SauvegardeImpossible e)
 		{
@@ -761,9 +777,9 @@ public class PersonnelFrame extends JFrame
 		}
 		try
 		{
-			gestionPersonnel.getRoot().setPassword(value);
+			getEditableAccount().setPassword(value);
 			refreshRootPage();
-			showInfo("Mot de passe root mis a jour.");
+			showInfo("Mot de passe du compte mis a jour.");
 		}
 		catch (SauvegardeImpossible e)
 		{
@@ -776,6 +792,12 @@ public class PersonnelFrame extends JFrame
 	 */
 	private void onAddLigue()
 	{
+		if (!isConnectedRoot())
+		{
+			showInfo("Seul le compte root peut creer des ligues.");
+			return;
+		}
+
 		String nom = JOptionPane.showInputDialog(this, "Nom de la ligue :", "Ajouter une ligue", JOptionPane.PLAIN_MESSAGE);
 		if (nom == null || nom.trim().isEmpty())
 			return;
@@ -854,6 +876,11 @@ public class PersonnelFrame extends JFrame
 			showInfo("Aucune ligue selectionnee.");
 			return;
 		}
+		if (!canManageCurrentLigueStructure())
+		{
+			showInfo("Vous n'avez pas les droits pour renommer cette ligue.");
+			return;
+		}
 
 		String nouveauNom = ligueRenameField.getText().trim();
 		if (nouveauNom.isEmpty())
@@ -882,6 +909,11 @@ public class PersonnelFrame extends JFrame
 		if (currentLigue == null)
 		{
 			showInfo("Aucune ligue selectionnee.");
+			return;
+		}
+		if (!canManageCurrentLigueStructure())
+		{
+			showInfo("Vous n'avez pas les droits pour changer l'administrateur.");
 			return;
 		}
 
@@ -937,6 +969,11 @@ public class PersonnelFrame extends JFrame
 			showInfo("Aucune ligue selectionnee.");
 			return;
 		}
+		if (!canManageCurrentLigueStructure())
+		{
+			showInfo("Vous n'avez pas les droits pour supprimer cette ligue.");
+			return;
+		}
 
 		int confirm = JOptionPane.showConfirmDialog(
 				this,
@@ -980,6 +1017,11 @@ public class PersonnelFrame extends JFrame
 			showInfo("Aucune ligue selectionnee.");
 			return;
 		}
+		if (!canManageCurrentLigueMembers())
+		{
+			showInfo("Vous n'avez pas les droits pour ajouter un employe.");
+			return;
+		}
 
 		EmployeDraft draft = askEmployeDraft();
 		if (draft == null)
@@ -1007,6 +1049,12 @@ public class PersonnelFrame extends JFrame
 			showInfo("Selectionnez un employe.");
 			return;
 		}
+		if (!canViewEmploye(selected))
+		{
+			showInfo("Vous pouvez seulement consulter votre propre compte.");
+			return;
+		}
+
 		currentEmploye = selected;
 		refreshEmployeDetailPage();
 		refreshEmployeEditPage();
@@ -1032,6 +1080,11 @@ public class PersonnelFrame extends JFrame
 			showInfo("Aucun employe selectionne.");
 			return;
 		}
+		if (!canEditEmploye(currentEmploye))
+		{
+			showInfo("Vous n'avez pas les droits pour modifier ce compte.");
+			return;
+		}
 		refreshEmployeEditPage();
 		showPage(PAGE_EMPLOYE_EDIT);
 	}
@@ -1044,6 +1097,11 @@ public class PersonnelFrame extends JFrame
 		if (currentEmploye == null)
 		{
 			showInfo("Aucun employe selectionne.");
+			return;
+		}
+		if (!canDeleteEmploye(currentEmploye))
+		{
+			showInfo("Vous n'avez pas les droits pour supprimer ce compte.");
 			return;
 		}
 
@@ -1259,6 +1317,196 @@ public class PersonnelFrame extends JFrame
 	}
 
 	/**
+	 * Initialise la selection courante juste apres une connexion.
+	 */
+	private void initializeContextForConnectedUser()
+	{
+		if (isConnectedRoot())
+		{
+			currentLigue = null;
+			currentEmploye = null;
+			return;
+		}
+
+		currentLigue = connectedUser.getLigue();
+		currentEmploye = connectedUser;
+	}
+
+	/**
+	 * Retourne le compte actuellement connecte (root par defaut avant login).
+	 */
+	private Employe getConnectedUser()
+	{
+		return connectedUser != null ? connectedUser : gestionPersonnel.getRoot();
+	}
+
+	/**
+	 * Retourne le compte editable sur la page "Gerer mon compte".
+	 */
+	private Employe getEditableAccount()
+	{
+		return getConnectedUser();
+	}
+
+	/**
+	 * Verifie si le compte connecte est root.
+	 */
+	private boolean isConnectedRoot()
+	{
+		return getConnectedUser().estRoot();
+	}
+
+	/**
+	 * Verifie si le compte connecte est admin d'une ligue.
+	 */
+	private boolean isConnectedAdmin()
+	{
+		return findAdminLigueFor(getConnectedUser()) != null;
+	}
+
+	/**
+	 * Indique si l'utilisateur peut voir au moins une ligue.
+	 */
+	private boolean hasLigueAccess()
+	{
+		return isConnectedRoot() || getConnectedUser().getLigue() != null;
+	}
+
+	/**
+	 * Cherche la ligue dont l'employe est administrateur.
+	 */
+	private Ligue findAdminLigueFor(Employe employe)
+	{
+		if (employe == null)
+			return null;
+		for (Ligue ligue : gestionPersonnel.getLigues())
+			if (ligue.getAdministrateur() == employe)
+				return ligue;
+		return null;
+	}
+
+	/**
+	 * Retourne les ligues visibles par l'utilisateur connecte.
+	 */
+	private List<Ligue> getVisibleLiguesForConnectedUser()
+	{
+		if (isConnectedRoot())
+			return new ArrayList<Ligue>(gestionPersonnel.getLigues());
+
+		List<Ligue> visible = new ArrayList<Ligue>();
+		if (getConnectedUser().getLigue() != null)
+			visible.add(getConnectedUser().getLigue());
+		return visible;
+	}
+
+	/**
+	 * Retourne vrai si l'utilisateur peut agir sur la ligue courante.
+	 */
+	private boolean canAccessCurrentLigue()
+	{
+		if (currentLigue == null)
+			return false;
+		if (isConnectedRoot())
+			return true;
+		return getConnectedUser().getLigue() == currentLigue;
+	}
+
+	/**
+	 * Gestion de structure (renommer, supprimer ligue, changer admin): root seulement.
+	 */
+	private boolean canManageCurrentLigueStructure()
+	{
+		return currentLigue != null && isConnectedRoot();
+	}
+
+	/**
+	 * Gestion des employes de la ligue : root ou admin de cette ligue.
+	 */
+	private boolean canManageCurrentLigueMembers()
+	{
+		if (!canAccessCurrentLigue())
+			return false;
+		if (isConnectedRoot())
+			return true;
+		return currentLigue.getAdministrateur() == getConnectedUser();
+	}
+
+	/**
+	 * Autorisation de consultation d'un employe.
+	 */
+	private boolean canViewEmploye(Employe employe)
+	{
+		if (employe == null)
+			return false;
+		if (isConnectedRoot())
+			return true;
+		if (employe == getConnectedUser())
+			return true;
+		return canManageCurrentLigueMembers();
+	}
+
+	/**
+	 * Autorisation de modification d'un employe.
+	 */
+	private boolean canEditEmploye(Employe employe)
+	{
+		if (employe == null)
+			return false;
+		if (isConnectedRoot())
+			return true;
+		if (employe == getConnectedUser())
+			return true;
+		return canManageCurrentLigueMembers();
+	}
+
+	/**
+	 * Autorisation de suppression d'un employe.
+	 */
+	private boolean canDeleteEmploye(Employe employe)
+	{
+		if (employe == null)
+			return false;
+		if (employe.estRoot() || employe == getConnectedUser())
+			return false;
+		if (isConnectedRoot())
+			return true;
+		return canManageCurrentLigueMembers();
+	}
+
+	/**
+	 * Traduction du role global pour affichage (menu de connexion).
+	 */
+	private String buildGlobalRoleLabel(Employe employe)
+	{
+		if (employe.estRoot())
+			return "super-utilisateur";
+		Ligue adminLigue = findAdminLigueFor(employe);
+		if (adminLigue != null)
+			return "administrateur - " + adminLigue.getNom();
+		return "utilisateur standard";
+	}
+
+	/**
+	 * Construit le texte HTML des boutons du menu principal.
+	 */
+	private String buildMenuButtonHtml(String title, String subtitle, Color titleColor)
+	{
+		return "<html><div style='font-family:monospace;line-height:1.25;'>"
+				+ "<span style='font-size:13px;color:" + toHex(titleColor) + ";'><b>" + title + "</b></span><br>"
+				+ "<span style='font-size:11px;color:" + toHex(COLOR_MUTED) + ";'>" + subtitle + "</span>"
+				+ "</div></html>";
+	}
+
+	/**
+	 * Recherche un compte a partir de l'identifiant saisi sur l'ecran de connexion.
+	 * Identifiants acceptes: root, mail, nom, nom.prenom.
+	 */
+	private Employe findUserByIdentifiant(String identifiant)
+	{
+		return gestionPersonnel.findEmployeByIdentifiant(identifiant);
+	}
+
+	/**
 	 * Ouvre un formulaire modal pour creer un employe.
 	 */
 	private EmployeDraft askEmployeDraft()
@@ -1359,6 +1607,7 @@ public class PersonnelFrame extends JFrame
 	 */
 	private void refreshAllData()
 	{
+		updateMenuActions();
 		updateMenuIdentity();
 		refreshRootPage();
 		refreshLiguesPage();
@@ -1373,9 +1622,40 @@ public class PersonnelFrame extends JFrame
 	 */
 	private void updateMenuIdentity()
 	{
-		Employe root = gestionPersonnel.getRoot();
-		String mail = root.getMail() == null || root.getMail().trim().isEmpty() ? "root@system" : root.getMail();
-		menuIdentityLabel.setText(root.getNom() + " " + root.getPrenom() + " - " + mail);
+		Employe user = getConnectedUser();
+		String mail = user.getMail() == null || user.getMail().trim().isEmpty() ? "root@system" : user.getMail();
+		menuIdentityLabel.setText(user.getNom() + " " + user.getPrenom() + " - " + mail + " - " + buildGlobalRoleLabel(user));
+	}
+
+	/**
+	 * Met a jour les libelles/actions du menu selon le role connecte.
+	 */
+	private void updateMenuActions()
+	{
+		Employe user = getConnectedUser();
+		if (user.estRoot())
+		{
+			menuRootButton.setText(buildMenuButtonHtml("Gerer le compte root", "Modifier les informations du super-utilisateur", COLOR_TEXT));
+			menuLiguesButton.setText(buildMenuButtonHtml("Gerer les ligues", "Creer, modifier et supprimer des ligues", COLOR_TEXT));
+			menuLiguesButton.setEnabled(true);
+			return;
+		}
+
+		menuRootButton.setText(buildMenuButtonHtml("Gerer mon compte", "Modifier mes informations personnelles", COLOR_TEXT));
+		if (hasLigueAccess())
+		{
+			String title = isConnectedAdmin() ? "Gerer ma ligue" : "Consulter ma ligue";
+			String subtitle = isConnectedAdmin()
+					? "Consulter et gerer les employes de ma ligue"
+					: "Consulter les employes de ma ligue";
+			menuLiguesButton.setText(buildMenuButtonHtml(title, subtitle, COLOR_TEXT));
+			menuLiguesButton.setEnabled(true);
+		}
+		else
+		{
+			menuLiguesButton.setText(buildMenuButtonHtml("Aucune ligue", "Aucune ligue n'est rattachee a ce compte", COLOR_MUTED));
+			menuLiguesButton.setEnabled(false);
+		}
 	}
 
 	/**
@@ -1383,11 +1663,22 @@ public class PersonnelFrame extends JFrame
 	 */
 	private void refreshRootPage()
 	{
-		Employe root = gestionPersonnel.getRoot();
+		Employe account = getEditableAccount();
+		if (account.estRoot())
+		{
+			rootPageTitleLabel.setText("GERER LE COMPTE ROOT");
+			rootPageSubtitleLabel.setText("Modification des informations du super-utilisateur");
+		}
+		else
+		{
+			rootPageTitleLabel.setText("GERER MON COMPTE");
+			rootPageSubtitleLabel.setText("Modification de mes informations personnelles");
+		}
+
 		StringBuilder sb = new StringBuilder();
-		sb.append("Nom\n").append(safeValue(root.getNom())).append("\n");
-		sb.append("Prenom\n").append(safeValue(root.getPrenom())).append("\n");
-		sb.append("Mail\n").append(safeValue(root.getMail())).append("\n");
+		sb.append("Nom\n").append(safeValue(account.getNom())).append("\n");
+		sb.append("Prenom\n").append(safeValue(account.getPrenom())).append("\n");
+		sb.append("Mail\n").append(safeValue(account.getMail())).append("\n");
 		sb.append("Password\n********\n");
 		rootInfoArea.setText(sb.toString());
 
@@ -1404,7 +1695,7 @@ public class PersonnelFrame extends JFrame
 	{
 		Ligue previous = currentLigue;
 		ligueRows.clear();
-		ligueRows.addAll(new ArrayList<Ligue>(gestionPersonnel.getLigues()));
+		ligueRows.addAll(getVisibleLiguesForConnectedUser());
 
 		liguesTableModel.setRowCount(0);
 		for (Ligue ligue : ligueRows)
@@ -1415,6 +1706,8 @@ public class PersonnelFrame extends JFrame
 		}
 
 		liguesCountLabel.setText(ligueRows.size() + " ligues enregistrees");
+		liguesAddButton.setEnabled(isConnectedRoot());
+		liguesEditButton.setEnabled(!ligueRows.isEmpty());
 
 		if (previous != null && ligueRows.contains(previous))
 			currentLigue = previous;
@@ -1442,6 +1735,13 @@ public class PersonnelFrame extends JFrame
 		}
 
 		setLigueEditEnabled(true);
+		ligueEmployeesButton.setEnabled(canAccessCurrentLigue());
+		boolean canManageStructure = canManageCurrentLigueStructure();
+		ligueRenameButton.setEnabled(canManageStructure);
+		ligueRenameValidateButton.setEnabled(canManageStructure);
+		ligueAdminButton.setEnabled(canManageStructure);
+		ligueDeleteButton.setEnabled(canManageStructure);
+		ligueRenameField.setEnabled(canManageStructure);
 		ligueEditTitleLabel.setText("EDITER - " + currentLigue.getNom().toUpperCase());
 		ligueEditSubtitleLabel.setText("Gestion de la ligue selectionnee");
 
@@ -1502,7 +1802,7 @@ public class PersonnelFrame extends JFrame
 			});
 		}
 
-		employesAddButton.setEnabled(true);
+		employesAddButton.setEnabled(canManageCurrentLigueMembers());
 		employesManageButton.setEnabled(!employeRows.isEmpty());
 
 		if (currentEmploye != null && !employeRows.contains(currentEmploye))
@@ -1924,11 +2224,7 @@ public class PersonnelFrame extends JFrame
 	/** Cree un bouton menu avec titre + sous-titre en HTML. */
 	private JButton createMenuActionButton(String title, String subtitle, Color titleColor)
 	{
-		String html = "<html><div style='font-family:monospace;line-height:1.25;'>"
-				+ "<span style='font-size:13px;color:" + toHex(titleColor) + ";'><b>" + title + "</b></span><br>"
-				+ "<span style='font-size:11px;color:" + toHex(COLOR_MUTED) + ";'>" + subtitle + "</span>"
-				+ "</div></html>";
-		JButton button = createNeutralButton(html);
+		JButton button = createNeutralButton(buildMenuButtonHtml(title, subtitle, titleColor));
 		button.setHorizontalAlignment(SwingConstants.LEFT);
 		button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 56));
 		return button;

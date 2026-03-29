@@ -8,8 +8,12 @@ import personnel.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 
+/**
+ * Tests unitaires couvrant la creation et la gestion d'une ligue.
+ */
 class testLigue
 {
+    /** Point d'entree metier partage par les tests de ce fichier. */
 	GestionPersonnel gestionPersonnel = GestionPersonnel.getGestionPersonnel();
 
     /**

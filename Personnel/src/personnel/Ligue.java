@@ -34,6 +34,9 @@ public class Ligue implements Serializable, Comparable<Ligue>
         this.id = gestionPersonnel.insert(this);
     }
 
+    /**
+     * Constructeur de chargement (utilise par JDBC), sans insertion.
+     */
     Ligue(GestionPersonnel gestionPersonnel, int id, String nom)
     {
         this.nom = nom;
@@ -150,6 +153,9 @@ public class Ligue implements Serializable, Comparable<Ligue>
         return employe;
     }
 
+    /**
+     * Ajoute un employe deja connu en base (cas chargement JDBC).
+     */
     public Employe addEmploye(int id, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide
     {
         Employe employe = new Employe(this.gestionPersonnel, id, this, nom, prenom, mail, password, dateArrivee, dateDepart);
@@ -157,6 +163,9 @@ public class Ligue implements Serializable, Comparable<Ligue>
         return employe;
     }
 
+    /**
+     * Retire un employe de l'ensemble en memoire.
+     */
     void remove(Employe employe)
     {
         employes.remove(employe);
@@ -182,12 +191,18 @@ public class Ligue implements Serializable, Comparable<Ligue>
         return getNom().compareTo(autre.getNom());
     }
 
+    /**
+     * Representation textuelle de la ligue.
+     */
     @Override
     public String toString()
     {
         return nom;
     }
 
+    /**
+     * Ajout direct d'un employe a la collection (utilitaire interne).
+     */
     public void add(Employe employe)
     {
         employes.add(employe);

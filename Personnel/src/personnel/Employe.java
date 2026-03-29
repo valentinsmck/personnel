@@ -20,12 +20,19 @@ public class Employe implements Serializable, Comparable<Employe>
 	private LocalDate dateArrivee, dateDepart;
 	private int id = -1;
 
+	/**
+	 * Constructeur metier pour creation d'un nouvel employe.
+	 * L'employe est automatiquement insere en persistance.
+	 */
 	Employe(GestionPersonnel gestionPersonnel, Ligue ligue, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide, SauvegardeImpossible
 	{
 		this(gestionPersonnel, -1, ligue, nom, prenom, mail, password, dateArrivee, dateDepart);
 		this.id = gestionPersonnel.insert(this);
 	}
 
+	/**
+	 * Constructeur de chargement (utilise par JDBC), sans insertion.
+	 */
 	Employe(GestionPersonnel gestionPersonnel, int id, Ligue ligue, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide
 	{
 		this.gestionPersonnel = gestionPersonnel;
@@ -223,18 +230,27 @@ public class Employe implements Serializable, Comparable<Employe>
 		persistUpdate();
 	}
 
+	/**
+	 * Synchronise l'etat de l'employe vers la persistance s'il est deja en base.
+	 */
 	private void persistUpdate() throws SauvegardeImpossible
 	{
 		if (id > 0)
 			gestionPersonnel.update(this);
 	}
 
+	/**
+	 * Regle metier: la date d'arrivee ne peut pas etre dans le futur.
+	 */
 	private void validateDateArrivee(LocalDate dateArrivee) throws DateInvalide
 	{
 		if (dateArrivee != null && dateArrivee.isAfter(LocalDate.now()))
 			throw new DateInvalide("La date d'arrivee ne peut pas etre posterieure a la date actuelle.");
 	}
 
+	/**
+	 * Regle metier: la date de depart ne peut pas preceder la date d'arrivee.
+	 */
 	private void validateDateDepart(LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide
 	{
 		if (dateDepart != null && dateArrivee != null && dateDepart.isBefore(dateArrivee))
@@ -270,6 +286,9 @@ public class Employe implements Serializable, Comparable<Employe>
 		return getPrenom().compareTo(autre.getPrenom());
 	}
 	
+	/**
+	 * Representation textuelle utile pour console/debug.
+	 */
 	@Override
 	public String toString()
 	{

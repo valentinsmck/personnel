@@ -12,18 +12,24 @@ import personnel.SauvegardeImpossible;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 
+/**
+ * Console dediee a l'edition d'un employe en mode ligne de commande.
+ */
 public class EmployeConsole 
 {
+    /** Construit l'option d'affichage complet d'un employe. */
 	private Option afficher(final Employe employe)
 	{
 		return new Option("Afficher l'employé", "l", () -> {System.out.println(employe);});
 	}
 
+    /** Retourne une factory d'option pour editer un employe selectionne. */
 	ListOption<Employe> editerEmploye()
 	{
 		return (employe) -> editerEmploye(employe);		
 	}
 
+    /** Construit le menu de gestion detaille d'un employe. */
 	Option editerEmploye(Employe employe)
 	{
 			Menu menu = new Menu("Gérer le compte " + employe.getNom(), "c");
@@ -38,6 +44,7 @@ public class EmployeConsole
 			return menu;
 	}
 
+    /** Met a jour le nom de l'employe. */
 	private Option changerNom(final Employe employe)
 	{
 		return new Option("Changer le nom", "n", 
@@ -55,6 +62,7 @@ public class EmployeConsole
 			);
 	}
 	
+    /** Met a jour le prenom de l'employe. */
 	private Option changerPrenom(final Employe employe)
 	{
         return new Option("Changer le prénom", "p", () ->
@@ -70,6 +78,7 @@ public class EmployeConsole
         });
 	}
 	
+    /** Met a jour l'adresse email de l'employe. */
 	private Option changerMail(final Employe employe)
 	{
         return new Option("Changer le mail", "e", () ->
@@ -85,6 +94,7 @@ public class EmployeConsole
         });
 	}
 	
+    /** Met a jour le mot de passe de l'employe (hachage cote metier). */
 	private Option changerPassword(final Employe employe)
 	{
         return new Option("Changer le password", "x", () ->
@@ -99,6 +109,8 @@ public class EmployeConsole
             }
         });
 	}
+
+    /** Met a jour la date d'arrivee en validant le format saisi. */
     private Option changerDateArrivee(final Employe employe)
     {
         return new Option("Changer la date d'arrivée","da",
@@ -124,6 +136,8 @@ public class EmployeConsole
                 }
         );
     }
+
+	/** Met a jour la date de depart en validant le format saisi. */
     private Option changerDateDepart(final Employe employe)
     {
         return new Option("Changer la date de départ","dd",
