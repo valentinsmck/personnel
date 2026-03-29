@@ -7,6 +7,9 @@ import javax.swing.SwingUtilities;
 
 public class PersonnelGuiMain
 {
+	/**
+	 * Point d'entree GUI direct (sans fallback console).
+	 */
 	public static void main(String[] args)
 	{
 		SwingUtilities.invokeLater(() ->

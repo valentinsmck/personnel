@@ -9,6 +9,11 @@ public class PersonnelApp
 {
 	private static final String LINE = "============================================================";
 
+	/**
+	 * Point d'entree principal.
+	 * - Lance la GUI si Swing est disponible
+	 * - Sinon bascule automatiquement en mode console
+	 */
 	public static void main(String[] args)
 	{
 		if (forceCliMode(args) || !canRunSwing())
@@ -32,6 +37,9 @@ public class PersonnelApp
 		});
 	}
 
+	/**
+	 * Teste rapidement si l'environnement courant peut afficher une fenetre Swing.
+	 */
 	private static boolean canRunSwing()
 	{
 		try
@@ -46,6 +54,9 @@ public class PersonnelApp
 		}
 	}
 
+	/**
+	 * Permet de forcer le mode console via l'argument --cli.
+	 */
 	private static boolean forceCliMode(String[] args)
 	{
 		for (String arg : args)
@@ -54,6 +65,9 @@ public class PersonnelApp
 		return false;
 	}
 
+	/**
+	 * Lance la version texte de l'application.
+	 */
 	private static void launchCLI()
 	{
 		System.out.println(LINE);

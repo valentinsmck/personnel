@@ -10,6 +10,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -31,6 +32,7 @@ import javax.swing.table.TableRowSorter;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -38,6 +40,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.LocalDate;
@@ -46,8 +50,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Fenetre principale de l'application Swing.
+ *
+ * Cette classe reproduit les 8 ecrans de la maquette via un CardLayout,
+ * avec une methode dediee pour chaque composant, conteneur et evenement.
+ */
 public class PersonnelFrame extends JFrame
 {
+	/** Identifiants des pages affichees dans le CardLayout. */
 	private static final String PAGE_LOGIN = "page.login";
 	private static final String PAGE_MENU = "page.menu";
 	private static final String PAGE_ROOT = "page.root";
@@ -57,6 +68,7 @@ public class PersonnelFrame extends JFrame
 	private static final String PAGE_EMPLOYE_DETAIL = "page.employe.detail";
 	private static final String PAGE_EMPLOYE_EDIT = "page.employe.edit";
 
+	/** Palette de couleurs inspiree de la maquette noir/vert. */
 	private static final Color COLOR_BG = new Color(3, 6, 9);
 	private static final Color COLOR_CARD = new Color(14, 16, 20);
 	private static final Color COLOR_PANEL = new Color(8, 10, 13);
@@ -149,6 +161,9 @@ public class PersonnelFrame extends JFrame
 	private JButton employeEditDateDepartButton;
 	private JButton employeEditBackButton;
 
+	/**
+	 * Construit la fenetre complete et initialise la navigation multi-pages.
+	 */
 	public PersonnelFrame(GestionPersonnel gestionPersonnel)
 	{
 		super("GESTIONPERSONNEL");
@@ -160,6 +175,9 @@ public class PersonnelFrame extends JFrame
 		showPage(PAGE_LOGIN);
 	}
 
+	/**
+	 * Configure les parametres globaux de la fenetre (taille, fermeture, position).
+	 */
 	private void configureFrame()
 	{
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -176,6 +194,9 @@ public class PersonnelFrame extends JFrame
 		});
 	}
 
+	/**
+	 * Cree le conteneur principal qui accueille toutes les pages du CardLayout.
+	 */
 	private JPanel buildMainContainer()
 	{
 		JPanel root = new JPanel(new GridBagLayout());
@@ -202,6 +223,9 @@ public class PersonnelFrame extends JFrame
 		return root;
 	}
 
+	/**
+	 * FENETRE 01 : page de connexion root.
+	 */
 	private JPanel buildLoginPage()
 	{
 		JPanel card = createPageCard();
@@ -221,6 +245,7 @@ public class PersonnelFrame extends JFrame
 		loginPasswordField = createPasswordField();
 		content.add(createLabeledInput("MOT DE PASSE", loginPasswordField));
 
+		// Bouton principal qui declenche la verification identifiant/mot de passe.
 		loginButton = createPrimaryButton("SE CONNECTER");
 		content.add(loginButton);
 
@@ -232,16 +257,32 @@ public class PersonnelFrame extends JFrame
 
 		JPanel roles = createSectionPanel();
 		roles.setLayout(new BoxLayout(roles, BoxLayout.Y_AXIS));
-		roles.add(createMutedLabel("ROLES DISPONIBLES"));
+		JLabel rolesTitle = createMutedLabel("ROLES DISPONIBLES");
+		rolesTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+		rolesTitle.setHorizontalAlignment(SwingConstants.CENTER);
+		roles.add(rolesTitle);
 		roles.add(Box.createVerticalStrut(8));
-		roles.add(createMutedLabel("- root - super-utilisateur"));
-		roles.add(createMutedLabel("- admin - administrateur de ligue"));
+		JLabel roleRoot = createMutedLabel("- root - super-utilisateur");
+		roleRoot.setAlignmentX(Component.CENTER_ALIGNMENT);
+		roleRoot.setHorizontalAlignment(SwingConstants.CENTER);
+		roles.add(roleRoot);
+		JLabel roleAdmin = createMutedLabel("- admin - administrateur de ligue");
+		roleAdmin.setAlignmentX(Component.CENTER_ALIGNMENT);
+		roleAdmin.setHorizontalAlignment(SwingConstants.CENTER);
+		roles.add(roleAdmin);
+		JLabel roleUser = createMutedLabel("- utilisateur - employe standard");
+		roleUser.setAlignmentX(Component.CENTER_ALIGNMENT);
+		roleUser.setHorizontalAlignment(SwingConstants.CENTER);
+		roles.add(roleUser);
 		content.add(roles);
 
 		card.add(content, BorderLayout.CENTER);
 		return wrapCard(card);
 	}
 
+	/**
+	 * FENETRE 02 : menu principal avec navigation vers les autres pages.
+	 */
 	private JPanel buildMenuPage()
 	{
 		JPanel card = createPageCard();
@@ -270,8 +311,11 @@ public class PersonnelFrame extends JFrame
 
 		content.add(identityPanel);
 
+		// Bouton de navigation vers la page de gestion du compte root.
 		menuRootButton = createMenuActionButton("Gerer le compte root", "Modifier les informations du super-utilisateur", COLOR_TEXT);
+		// Bouton de navigation vers la page de gestion des ligues.
 		menuLiguesButton = createMenuActionButton("Gerer les ligues", "Creer, modifier et supprimer des ligues", COLOR_TEXT);
+		// Bouton de sortie (avec confirmation de sauvegarde).
 		menuQuitButton = createMenuActionButton("Quitter", "Fermer l'application", COLOR_DANGER);
 
 		content.add(menuRootButton);
@@ -282,6 +326,9 @@ public class PersonnelFrame extends JFrame
 		return wrapCard(card);
 	}
 
+	/**
+	 * FENETRE 03 : edition du compte root, champ par champ.
+	 */
 	private JPanel buildRootPage()
 	{
 		JPanel card = createPageCard();
@@ -299,6 +346,7 @@ public class PersonnelFrame extends JFrame
 		rootMailField = createTextField();
 		rootPasswordField = createPasswordField();
 
+		// Chaque bouton applique uniquement le champ de la ligne correspondante.
 		rootNomButton = createNeutralButton("Modifier");
 		rootPrenomButton = createNeutralButton("Modifier");
 		rootMailButton = createNeutralButton("Modifier");
@@ -317,6 +365,9 @@ public class PersonnelFrame extends JFrame
 		return wrapCard(card);
 	}
 
+	/**
+	 * FENETRE 04 : liste des ligues, avec actions ajouter/editer/retour.
+	 */
 	private JPanel buildLiguesPage()
 	{
 		JPanel card = createPageCard();
@@ -340,6 +391,7 @@ public class PersonnelFrame extends JFrame
 		actions.setOpaque(false);
 		liguesBackButton = createGhostButton("<- Retour");
 		actions.add(liguesBackButton, BorderLayout.WEST);
+		// Ouvre la page d'edition de la ligue selectionnee dans le tableau.
 		liguesEditButton = createNeutralButton("Editer >");
 		actions.add(liguesEditButton, BorderLayout.EAST);
 		content.add(actions);
@@ -348,6 +400,9 @@ public class PersonnelFrame extends JFrame
 		return wrapCard(card);
 	}
 
+	/**
+	 * FENETRE 05 : edition d'une ligue (infos, admin, suppression, renommage).
+	 */
 	private JPanel buildLigueEditPage()
 	{
 		JPanel card = createPageCard();
@@ -363,9 +418,13 @@ public class PersonnelFrame extends JFrame
 		content.add(createDivider());
 		content.add(createMutedLabel("ACTIONS"));
 
+		// Ouvre la page des employes rattaches a la ligue.
 		ligueEmployeesButton = createLinkButton("Voir la liste des employes >");
+		// Place le focus sur la zone de renommage.
 		ligueRenameButton = createNeutralButton("Renommer la ligue >");
+		// Ouvre le selecteur pour changer l'administrateur.
 		ligueAdminButton = createWarnButton("Changer l'administrateur >");
+		// Supprime la ligue et ses employes apres confirmation.
 		ligueDeleteButton = createDangerButton("Supprimer la ligue");
 
 		content.add(ligueEmployeesButton);
@@ -390,6 +449,9 @@ public class PersonnelFrame extends JFrame
 		return wrapCard(card);
 	}
 
+	/**
+	 * FENETRE 06 : liste des employes de la ligue courante.
+	 */
 	private JPanel buildEmployesPage()
 	{
 		JPanel card = createPageCard();
@@ -415,6 +477,7 @@ public class PersonnelFrame extends JFrame
 		actions.setOpaque(false);
 		employesBackButton = createGhostButton("<- Retour");
 		actions.add(employesBackButton, BorderLayout.WEST);
+		// Ouvre la fiche detail de l'employe selectionne.
 		employesManageButton = createNeutralButton("Gerer >");
 		actions.add(employesManageButton, BorderLayout.EAST);
 		content.add(actions);
@@ -423,6 +486,9 @@ public class PersonnelFrame extends JFrame
 		return wrapCard(card);
 	}
 
+	/**
+	 * FENETRE 07 : fiche detail d'un employe et actions principales.
+	 */
 	private JPanel buildEmployeDetailPage()
 	{
 		JPanel card = createPageCard();
@@ -453,6 +519,9 @@ public class PersonnelFrame extends JFrame
 		return wrapCard(card);
 	}
 
+	/**
+	 * FENETRE 08 : edition du compte employe, champ par champ.
+	 */
 	private JPanel buildEmployeEditPage()
 	{
 		JPanel card = createPageCard();
@@ -490,6 +559,9 @@ public class PersonnelFrame extends JFrame
 		return wrapCard(card);
 	}
 
+	/**
+	 * Relie chaque composant interactif a sa methode evenement dediee.
+	 */
 	private void bindEvents()
 	{
 		loginButton.addActionListener(e -> onLoginSubmit());
@@ -551,6 +623,9 @@ public class PersonnelFrame extends JFrame
 		employeEditBackButton.addActionListener(e -> onBackToEmployeDetailFromEdit());
 	}
 
+	/**
+	 * Valide la connexion root depuis la page de login.
+	 */
 	private void onLoginSubmit()
 	{
 		String identifiant = loginUserField.getText().trim();
@@ -570,28 +645,43 @@ public class PersonnelFrame extends JFrame
 		showPage(PAGE_MENU);
 	}
 
+	/**
+	 * Navigue vers la page de gestion du compte root.
+	 */
 	private void onOpenRootPage()
 	{
 		refreshRootPage();
 		showPage(PAGE_ROOT);
 	}
 
+	/**
+	 * Navigue vers la page listant toutes les ligues.
+	 */
 	private void onOpenLiguesPage()
 	{
 		refreshLiguesPage();
 		showPage(PAGE_LIGUES);
 	}
 
+	/**
+	 * Demande la fermeture de l'application depuis le menu principal.
+	 */
 	private void onQuitRequestedFromMenu()
 	{
 		onCloseRequested();
 	}
 
+	/**
+	 * Retourne du compte root vers le menu principal.
+	 */
 	private void onRootBackToMenu()
 	{
 		showPage(PAGE_MENU);
 	}
 
+	/**
+	 * Met a jour le nom du root.
+	 */
 	private void onRootUpdateNom()
 	{
 		String value = rootNomField.getText().trim();
@@ -612,6 +702,9 @@ public class PersonnelFrame extends JFrame
 		}
 	}
 
+	/**
+	 * Met a jour le prenom du root.
+	 */
 	private void onRootUpdatePrenom()
 	{
 		String value = rootPrenomField.getText().trim();
@@ -632,6 +725,9 @@ public class PersonnelFrame extends JFrame
 		}
 	}
 
+	/**
+	 * Met a jour le mail du root.
+	 */
 	private void onRootUpdateMail()
 	{
 		String value = rootMailField.getText().trim();
@@ -652,6 +748,9 @@ public class PersonnelFrame extends JFrame
 		}
 	}
 
+	/**
+	 * Met a jour le mot de passe du root (hachage applique en couche metier).
+	 */
 	private void onRootUpdatePassword()
 	{
 		String value = new String(rootPasswordField.getPassword()).trim();
@@ -672,6 +771,9 @@ public class PersonnelFrame extends JFrame
 		}
 	}
 
+	/**
+	 * Cree une nouvelle ligue.
+	 */
 	private void onAddLigue()
 	{
 		String nom = JOptionPane.showInputDialog(this, "Nom de la ligue :", "Ajouter une ligue", JOptionPane.PLAIN_MESSAGE);
@@ -688,6 +790,9 @@ public class PersonnelFrame extends JFrame
 		}
 	}
 
+	/**
+	 * Ouvre l'edition de la ligue selectionnee.
+	 */
 	private void onOpenSelectedLiguePage()
 	{
 		Ligue selected = getSelectedLigueFromTable();
@@ -702,11 +807,17 @@ public class PersonnelFrame extends JFrame
 		showPage(PAGE_LIGUE_EDIT);
 	}
 
+	/**
+	 * Retourne de la liste des ligues vers le menu principal.
+	 */
 	private void onBackToMenuFromLigues()
 	{
 		showPage(PAGE_MENU);
 	}
 
+	/**
+	 * Ouvre la liste des employes de la ligue en cours.
+	 */
 	private void onOpenEmployesPage()
 	{
 		if (currentLigue == null)
@@ -718,6 +829,9 @@ public class PersonnelFrame extends JFrame
 		showPage(PAGE_EMPLOYES);
 	}
 
+	/**
+	 * Place le curseur dans le champ de renommage de ligue.
+	 */
 	private void onStartRenameCurrentLigue()
 	{
 		if (currentLigue == null)
@@ -730,6 +844,9 @@ public class PersonnelFrame extends JFrame
 		ligueRenameField.selectAll();
 	}
 
+	/**
+	 * Applique le nouveau nom de la ligue courante.
+	 */
 	private void onRenameCurrentLigue()
 	{
 		if (currentLigue == null)
@@ -757,6 +874,9 @@ public class PersonnelFrame extends JFrame
 		}
 	}
 
+	/**
+	 * Change l'administrateur de la ligue courante via une liste de choix.
+	 */
 	private void onChangeCurrentLigueAdmin()
 	{
 		if (currentLigue == null)
@@ -807,6 +927,9 @@ public class PersonnelFrame extends JFrame
 		}
 	}
 
+	/**
+	 * Supprime la ligue courante apres confirmation utilisateur.
+	 */
 	private void onDeleteCurrentLigue()
 	{
 		if (currentLigue == null)
@@ -838,12 +961,18 @@ public class PersonnelFrame extends JFrame
 		}
 	}
 
+	/**
+	 * Retourne de l'edition ligue vers la liste des ligues.
+	 */
 	private void onBackToLiguesFromLigueEdit()
 	{
 		refreshLiguesPage();
 		showPage(PAGE_LIGUES);
 	}
 
+	/**
+	 * Ajoute un employe dans la ligue courante.
+	 */
 	private void onAddEmploye()
 	{
 		if (currentLigue == null)
@@ -867,6 +996,9 @@ public class PersonnelFrame extends JFrame
 		}
 	}
 
+	/**
+	 * Ouvre la fiche detail de l'employe selectionne.
+	 */
 	private void onOpenSelectedEmployePage()
 	{
 		Employe selected = getSelectedEmployeFromTable();
@@ -881,12 +1013,18 @@ public class PersonnelFrame extends JFrame
 		showPage(PAGE_EMPLOYE_DETAIL);
 	}
 
+	/**
+	 * Retourne de la liste employes vers l'edition de la ligue.
+	 */
 	private void onBackToLigueEditFromEmployes()
 	{
 		refreshLigueEditorPage();
 		showPage(PAGE_LIGUE_EDIT);
 	}
 
+	/**
+	 * Ouvre la page d'edition du compte employe courant.
+	 */
 	private void onOpenEmployeEditPage()
 	{
 		if (currentEmploye == null)
@@ -898,6 +1036,9 @@ public class PersonnelFrame extends JFrame
 		showPage(PAGE_EMPLOYE_EDIT);
 	}
 
+	/**
+	 * Supprime l'employe courant apres confirmation.
+	 */
 	private void onDeleteCurrentEmploye()
 	{
 		if (currentEmploye == null)
@@ -928,12 +1069,18 @@ public class PersonnelFrame extends JFrame
 		}
 	}
 
+	/**
+	 * Retourne de la fiche detail employe vers la liste des employes.
+	 */
 	private void onBackToEmployesFromEmployeDetail()
 	{
 		refreshEmployesPage();
 		showPage(PAGE_EMPLOYES);
 	}
 
+	/**
+	 * Met a jour le nom de l'employe courant.
+	 */
 	private void onUpdateEmployeNom()
 	{
 		if (!ensureCurrentEmploye())
@@ -955,6 +1102,9 @@ public class PersonnelFrame extends JFrame
 		}
 	}
 
+	/**
+	 * Met a jour le prenom de l'employe courant.
+	 */
 	private void onUpdateEmployePrenom()
 	{
 		if (!ensureCurrentEmploye())
@@ -976,6 +1126,9 @@ public class PersonnelFrame extends JFrame
 		}
 	}
 
+	/**
+	 * Met a jour le mail de l'employe courant.
+	 */
 	private void onUpdateEmployeMail()
 	{
 		if (!ensureCurrentEmploye())
@@ -997,6 +1150,9 @@ public class PersonnelFrame extends JFrame
 		}
 	}
 
+	/**
+	 * Met a jour le mot de passe de l'employe courant.
+	 */
 	private void onUpdateEmployePassword()
 	{
 		if (!ensureCurrentEmploye())
@@ -1019,6 +1175,9 @@ public class PersonnelFrame extends JFrame
 		}
 	}
 
+	/**
+	 * Met a jour la date d'arrivee de l'employe courant.
+	 */
 	private void onUpdateEmployeDateArrivee()
 	{
 		if (!ensureCurrentEmploye())
@@ -1035,6 +1194,9 @@ public class PersonnelFrame extends JFrame
 		}
 	}
 
+	/**
+	 * Met a jour la date de depart de l'employe courant.
+	 */
 	private void onUpdateEmployeDateDepart()
 	{
 		if (!ensureCurrentEmploye())
@@ -1051,50 +1213,43 @@ public class PersonnelFrame extends JFrame
 		}
 	}
 
+	/**
+	 * Retourne de l'edition employe vers sa fiche detail.
+	 */
 	private void onBackToEmployeDetailFromEdit()
 	{
 		refreshEmployeDetailPage();
 		showPage(PAGE_EMPLOYE_DETAIL);
 	}
 
+	/**
+	 * Gere la fermeture de la fenetre avec confirmation simple Oui/Non.
+	 */
 	private void onCloseRequested()
 	{
-		String[] options = {"Sauvegarder et quitter", "Quitter sans sauvegarder", "Annuler"};
-		int choice = JOptionPane.showOptionDialog(
+		int choice = JOptionPane.showConfirmDialog(
 				this,
-				"Voulez-vous sauvegarder avant de quitter ?",
-				"Confirmation",
-				JOptionPane.DEFAULT_OPTION,
-				JOptionPane.QUESTION_MESSAGE,
-				null,
-				options,
-				options[0]
+				"Voulez-vous vraiment quitter ?",
+				"Quitter l'application",
+				JOptionPane.YES_NO_OPTION,
+				JOptionPane.QUESTION_MESSAGE
 		);
-
-		if (choice == 0)
-		{
-			try
-			{
-				gestionPersonnel.sauvegarder();
-				dispose();
-			}
-			catch (SauvegardeImpossible e)
-			{
-				showError("Sauvegarde impossible", e);
-			}
-		}
-		else if (choice == 1)
-		{
+		if (choice == JOptionPane.YES_OPTION)
 			dispose();
-		}
 	}
 
+	/**
+	 * Point unique appele apres une mise a jour d'employe.
+	 */
 	private void afterEmployeUpdate(String message)
 	{
 		refreshAllData();
 		showInfo(message);
 	}
 
+	/**
+	 * Verifie qu'un employe est bien selectionne avant une action.
+	 */
 	private boolean ensureCurrentEmploye()
 	{
 		if (currentEmploye != null)
@@ -1103,6 +1258,9 @@ public class PersonnelFrame extends JFrame
 		return false;
 	}
 
+	/**
+	 * Ouvre un formulaire modal pour creer un employe.
+	 */
 	private EmployeDraft askEmployeDraft()
 	{
 		JTextField nomField = createTextField();
@@ -1112,55 +1270,76 @@ public class PersonnelFrame extends JFrame
 		JTextField dateArriveeField = createTextField();
 		JTextField dateDepartField = createTextField();
 
-		JPanel form = new JPanel(new GridLayout(6, 2, 6, 6));
-		form.setBackground(COLOR_CARD);
-		form.add(createMutedLabel("Nom"));
-		form.add(nomField);
-		form.add(createMutedLabel("Prenom"));
-		form.add(prenomField);
-		form.add(createMutedLabel("Mail"));
-		form.add(mailField);
-		form.add(createMutedLabel("Mot de passe"));
-		form.add(passwordField);
-		form.add(createMutedLabel("Date d'arrivee (yyyy-mm-dd)"));
-		form.add(dateArriveeField);
-		form.add(createMutedLabel("Date de depart (yyyy-mm-dd, optionnel)"));
-		form.add(dateDepartField);
+		JDialog dialog = new JDialog(this, "Ajouter un employe", true);
+		dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
-		int result = JOptionPane.showConfirmDialog(
-				this,
-				form,
-				"Ajouter un employe",
-				JOptionPane.OK_CANCEL_OPTION,
-				JOptionPane.PLAIN_MESSAGE
-		);
-		if (result != JOptionPane.OK_OPTION)
-			return null;
+		JPanel dialogRoot = new JPanel(new BorderLayout());
+		dialogRoot.setBackground(COLOR_BG);
+		dialogRoot.setBorder(new EmptyBorder(14, 14, 14, 14));
 
-		String nom = nomField.getText().trim();
-		String prenom = prenomField.getText().trim();
-		String mail = mailField.getText().trim();
-		String password = new String(passwordField.getPassword()).trim();
+		JPanel card = createPageCard();
+		JPanel content = createVerticalContainer(10);
+		content.add(createPageHeader("FORMULAIRE", "AJOUTER UN EMPLOYE", "Creation d'un nouveau compte employe"));
+		content.add(createLabeledInput("NOM", nomField));
+		content.add(createLabeledInput("PRENOM", prenomField));
+		content.add(createLabeledInput("MAIL", mailField));
+		content.add(createLabeledInput("MOT DE PASSE", passwordField));
+		content.add(createLabeledInput("DATE D'ARRIVEE (yyyy-mm-dd)", dateArriveeField));
+		content.add(createLabeledInput("DATE DE DEPART (yyyy-mm-dd, optionnel)", dateDepartField));
 
-		if (nom.isEmpty() || prenom.isEmpty() || mail.isEmpty() || password.isEmpty())
+		JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+		actions.setOpaque(false);
+		JButton cancelButton = createGhostButton("Annuler");
+		JButton validateButton = createPrimaryButton("Valider");
+		actions.add(cancelButton);
+		actions.add(validateButton);
+		content.add(actions);
+
+		card.add(content, BorderLayout.CENTER);
+		dialogRoot.add(card, BorderLayout.CENTER);
+		dialog.setContentPane(dialogRoot);
+		dialog.setMinimumSize(new Dimension(640, 560));
+		dialog.setSize(700, 580);
+		dialog.setLocationRelativeTo(this);
+
+		final EmployeDraft[] result = new EmployeDraft[1];
+		cancelButton.addActionListener(e -> dialog.dispose());
+		validateButton.addActionListener(e ->
 		{
-			showInfo("Tous les champs sauf date de depart sont obligatoires.");
-			return null;
-		}
+			String nom = nomField.getText().trim();
+			String prenom = prenomField.getText().trim();
+			String mail = mailField.getText().trim();
+			String password = new String(passwordField.getPassword()).trim();
 
-		try
-		{
-			LocalDate dateArrivee = parseOptionalDate(dateArriveeField.getText().trim());
-			LocalDate dateDepart = parseOptionalDate(dateDepartField.getText().trim());
-			return new EmployeDraft(nom, prenom, mail, password, dateArrivee, dateDepart);
-		}
-		catch (DateInvalide e)
-		{
-			showError("Date invalide", e);
-			return null;
-		}
+			if (nom.isEmpty() || prenom.isEmpty() || mail.isEmpty() || password.isEmpty())
+			{
+				showInfo("Tous les champs sauf date de depart sont obligatoires.");
+				return;
+			}
+
+			try
+			{
+				LocalDate dateArrivee = parseOptionalDate(dateArriveeField.getText().trim());
+				LocalDate dateDepart = parseOptionalDate(dateDepartField.getText().trim());
+				result[0] = new EmployeDraft(nom, prenom, mail, password, dateArrivee, dateDepart);
+				dialog.dispose();
+			}
+			catch (DateInvalide ex)
+			{
+				showError("Date invalide", ex);
+			}
+		});
+
+		dialog.getRootPane().setDefaultButton(validateButton);
+		dialog.setVisible(true);
+		return result[0];
 	}
 
+	/**
+	 * Convertit un texte yyyy-mm-dd en LocalDate, vide => null.
+	 *
+	 * Terme technique : LocalDate est le type Java date sans heure.
+	 */
 	private LocalDate parseOptionalDate(String value) throws DateInvalide
 	{
 		if (value == null || value.isEmpty())
@@ -1175,6 +1354,9 @@ public class PersonnelFrame extends JFrame
 		}
 	}
 
+	/**
+	 * Rafraichit l'ensemble des pages apres une modification metier.
+	 */
 	private void refreshAllData()
 	{
 		updateMenuIdentity();
@@ -1186,6 +1368,9 @@ public class PersonnelFrame extends JFrame
 		refreshEmployeEditPage();
 	}
 
+	/**
+	 * Met a jour la carte d'identite affichee dans le menu principal.
+	 */
 	private void updateMenuIdentity()
 	{
 		Employe root = gestionPersonnel.getRoot();
@@ -1193,6 +1378,9 @@ public class PersonnelFrame extends JFrame
 		menuIdentityLabel.setText(root.getNom() + " " + root.getPrenom() + " - " + mail);
 	}
 
+	/**
+	 * Recharge les donnees visibles sur la page Root.
+	 */
 	private void refreshRootPage()
 	{
 		Employe root = gestionPersonnel.getRoot();
@@ -1209,6 +1397,9 @@ public class PersonnelFrame extends JFrame
 		rootPasswordField.setText("");
 	}
 
+	/**
+	 * Recharge la table des ligues et preserve la selection courante.
+	 */
 	private void refreshLiguesPage()
 	{
 		Ligue previous = currentLigue;
@@ -1235,6 +1426,9 @@ public class PersonnelFrame extends JFrame
 		selectCurrentLigueInTable();
 	}
 
+	/**
+	 * Recharge la page d'edition de ligue selon la ligue selectionnee.
+	 */
 	private void refreshLigueEditorPage()
 	{
 		if (currentLigue == null)
@@ -1260,6 +1454,9 @@ public class PersonnelFrame extends JFrame
 		ligueInfoArea.setText(sb.toString());
 	}
 
+	/**
+	 * Active/desactive les commandes de la page ligue.
+	 */
 	private void setLigueEditEnabled(boolean enabled)
 	{
 		ligueEmployeesButton.setEnabled(enabled);
@@ -1270,6 +1467,9 @@ public class PersonnelFrame extends JFrame
 		ligueRenameField.setEnabled(enabled);
 	}
 
+	/**
+	 * Recharge la table des employes de la ligue courante.
+	 */
 	private void refreshEmployesPage()
 	{
 		employeRows.clear();
@@ -1313,6 +1513,9 @@ public class PersonnelFrame extends JFrame
 		selectCurrentEmployeInTable();
 	}
 
+	/**
+	 * Recharge la fiche detail de l'employe courant.
+	 */
 	private void refreshEmployeDetailPage()
 	{
 		if (currentEmploye == null)
@@ -1341,6 +1544,9 @@ public class PersonnelFrame extends JFrame
 		employeDeleteButton.setEnabled(!currentEmploye.estRoot());
 	}
 
+	/**
+	 * Recharge les champs de la page edition employe.
+	 */
 	private void refreshEmployeEditPage()
 	{
 		if (currentEmploye == null)
@@ -1366,6 +1572,9 @@ public class PersonnelFrame extends JFrame
 		employeEditDateDepartField.setText(currentEmploye.getDateDepart() == null ? "" : currentEmploye.getDateDepart().toString());
 	}
 
+	/**
+	 * Active/desactive tous les champs de la page edition employe.
+	 */
 	private void setEmployeEditEnabled(boolean enabled)
 	{
 		employeEditNomField.setEnabled(enabled);
@@ -1382,6 +1591,9 @@ public class PersonnelFrame extends JFrame
 		employeEditDateDepartButton.setEnabled(enabled);
 	}
 
+	/**
+	 * Recupere la ligue selectionnee dans la table, en tenant compte du tri.
+	 */
 	private Ligue getSelectedLigueFromTable()
 	{
 		int viewRow = liguesTable.getSelectedRow();
@@ -1393,6 +1605,9 @@ public class PersonnelFrame extends JFrame
 		return ligueRows.get(modelRow);
 	}
 
+	/**
+	 * Recupere l'employe selectionne dans la table, en tenant compte du tri.
+	 */
 	private Employe getSelectedEmployeFromTable()
 	{
 		int viewRow = employesTable.getSelectedRow();
@@ -1404,6 +1619,9 @@ public class PersonnelFrame extends JFrame
 		return employeRows.get(modelRow);
 	}
 
+	/**
+	 * Aligne la selection visuelle de la table ligues sur currentLigue.
+	 */
 	private void selectCurrentLigueInTable()
 	{
 		if (currentLigue == null)
@@ -1423,6 +1641,9 @@ public class PersonnelFrame extends JFrame
 		liguesTable.clearSelection();
 	}
 
+	/**
+	 * Aligne la selection visuelle de la table employes sur currentEmploye.
+	 */
 	private void selectCurrentEmployeInTable()
 	{
 		if (currentEmploye == null)
@@ -1442,11 +1663,20 @@ public class PersonnelFrame extends JFrame
 		employesTable.clearSelection();
 	}
 
+	/**
+	 * Affiche une page du CardLayout a partir de son identifiant.
+	 *
+	 * Terme technique : CardLayout est un conteneur de pages superposees,
+	 * une seule page est visible a la fois.
+	 */
 	private void showPage(String pageName)
 	{
 		pageLayout.show(pageHost, pageName);
 	}
 
+	/**
+	 * Cree le style de base d'une carte (panneau principal d'une page).
+	 */
 	private JPanel createPageCard()
 	{
 		JPanel card = new JPanel(new BorderLayout());
@@ -1458,42 +1688,72 @@ public class PersonnelFrame extends JFrame
 		return card;
 	}
 
+	/**
+	 * Centre visuellement la carte et adapte sa largeur a la fenetre.
+	 *
+	 * Responsive ici signifie :
+	 * - largeur maximale sur grand ecran
+	 * - reduction progressive sur petit ecran
+	 * - bloc toujours centre horizontalement et verticalement
+	 */
 	private JPanel wrapCard(JPanel card)
 	{
 		JPanel wrapper = new JPanel(new GridBagLayout());
 		wrapper.setOpaque(false);
+
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.weightx = 1;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.weighty = 1;
+		gbc.anchor = GridBagConstraints.CENTER;
+		gbc.fill = GridBagConstraints.NONE;
+		gbc.insets = new Insets(14, 14, 14, 14);
 		wrapper.add(card, gbc);
 
-		GridBagConstraints spacer = new GridBagConstraints();
-		spacer.gridx = 0;
-		spacer.gridy = 1;
-		spacer.weightx = 1;
-		spacer.weighty = 1;
-		JPanel empty = new JPanel();
-		empty.setOpaque(false);
-		wrapper.add(empty, spacer);
+		wrapper.addComponentListener(new ComponentAdapter()
+		{
+			@Override
+			public void componentResized(ComponentEvent e)
+			{
+				int available = Math.max(460, wrapper.getWidth() - 80);
+				int targetWidth = Math.min(980, available);
+				Dimension pref = card.getPreferredSize();
+				if (pref == null || pref.width != targetWidth)
+				{
+					int height = pref == null ? card.getHeight() : pref.height;
+					card.setPreferredSize(new Dimension(targetWidth, Math.max(420, height)));
+					wrapper.revalidate();
+				}
+			}
+		});
+
+		Dimension initial = card.getPreferredSize();
+		if (initial != null)
+			card.setPreferredSize(new Dimension(Math.min(980, Math.max(760, initial.width)), initial.height));
 		return wrapper;
 	}
 
+	/**
+	 * Cree un conteneur vertical qui ajoute un espacement automatique
+	 * entre chaque bloc pour un rendu plus propre.
+	 */
 	private JPanel createVerticalContainer(int gap)
 	{
-		JPanel container = new JPanel();
-		container.setOpaque(false);
-		container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-		container.putClientProperty("gap", gap);
-		return container;
+		return new VerticalStackPanel(gap);
 	}
 
+	/**
+	 * Construit l'entete standard d'une page (numero, titre, sous-titre).
+	 */
 	private JPanel createPageHeader(String windowLabel, String title, String subtitle)
 	{
 		return createTitleContainer(windowLabel, createTitleLabel(title), createMutedLabel(subtitle));
 	}
 
+	/**
+	 * Assemble les labels de titre de page dans un bloc vertical.
+	 */
 	private JPanel createTitleContainer(String windowLabel, JLabel title, JLabel subtitle)
 	{
 		JPanel panel = new JPanel();
@@ -1511,6 +1771,7 @@ public class PersonnelFrame extends JFrame
 		return panel;
 	}
 
+	/** Cree un titre principal en couleur accent. */
 	private JLabel createTitleLabel(String text)
 	{
 		JLabel label = new JLabel(text);
@@ -1519,6 +1780,7 @@ public class PersonnelFrame extends JFrame
 		return label;
 	}
 
+	/** Cree un label secondaire (texte discret). */
 	private JLabel createMutedLabel(String text)
 	{
 		JLabel label = new JLabel(text);
@@ -1527,6 +1789,7 @@ public class PersonnelFrame extends JFrame
 		return label;
 	}
 
+	/** Cree un label de contenu principal. */
 	private JLabel createTextLabel(String text)
 	{
 		JLabel label = new JLabel(text);
@@ -1535,6 +1798,7 @@ public class PersonnelFrame extends JFrame
 		return label;
 	}
 
+	/** Cree une ligne label + champ de saisie. */
 	private JPanel createLabeledInput(String label, JComponent input)
 	{
 		JPanel panel = new JPanel(new BorderLayout(0, 5));
@@ -1545,6 +1809,7 @@ public class PersonnelFrame extends JFrame
 		return panel;
 	}
 
+	/** Cree une ligne champ + bouton d'action. */
 	private JPanel createFieldActionRow(JComponent field, JButton actionButton, String placeholder)
 	{
 		if (field instanceof JTextField)
@@ -1560,6 +1825,7 @@ public class PersonnelFrame extends JFrame
 		return row;
 	}
 
+	/** Cree une ligne d'edition complete : titre, champ et bouton valider. */
 	private JPanel createLabeledEditRow(String label, JComponent field, JButton actionButton)
 	{
 		JPanel row = new JPanel(new BorderLayout(0, 5));
@@ -1569,6 +1835,7 @@ public class PersonnelFrame extends JFrame
 		return row;
 	}
 
+	/** Cree un bloc visuel secondaire (encadre sombre). */
 	private JPanel createSectionPanel()
 	{
 		JPanel panel = new JPanel();
@@ -1577,6 +1844,7 @@ public class PersonnelFrame extends JFrame
 		return panel;
 	}
 
+	/** Cree un champ texte style maquette. */
 	private JTextField createTextField()
 	{
 		JTextField field = new JTextField();
@@ -1588,6 +1856,7 @@ public class PersonnelFrame extends JFrame
 		return field;
 	}
 
+	/** Cree un champ mot de passe style maquette. */
 	private JPasswordField createPasswordField()
 	{
 		JPasswordField field = new JPasswordField();
@@ -1599,6 +1868,9 @@ public class PersonnelFrame extends JFrame
 		return field;
 	}
 
+	/**
+	 * Fabrique de boutons centralisee pour garder un style coherent.
+	 */
 	private JButton createButton(String text, Color bg, Color fg, Color border)
 	{
 		JButton button = new JButton(text);
@@ -1613,36 +1885,43 @@ public class PersonnelFrame extends JFrame
 		return button;
 	}
 
+	/** Bouton d'action principal (accent vert). */
 	private JButton createPrimaryButton(String text)
 	{
 		return createButton(text, COLOR_ACCENT, new Color(8, 11, 15), COLOR_ACCENT);
 	}
 
+	/** Bouton neutre pour actions standards. */
 	private JButton createNeutralButton(String text)
 	{
 		return createButton(text, new Color(16, 20, 25), COLOR_TEXT, COLOR_BORDER);
 	}
 
+	/** Bouton discret (retour/navigation secondaire). */
 	private JButton createGhostButton(String text)
 	{
 		return createButton(text, new Color(15, 18, 22), COLOR_MUTED, COLOR_BORDER);
 	}
 
+	/** Bouton de suppression (rouge). */
 	private JButton createDangerButton(String text)
 	{
 		return createButton(text, new Color(34, 12, 16), COLOR_DANGER, COLOR_DANGER);
 	}
 
+	/** Bouton d'alerte (jaune) pour action sensible non destructive. */
 	private JButton createWarnButton(String text)
 	{
 		return createButton(text, new Color(34, 28, 12), COLOR_WARN, COLOR_WARN);
 	}
 
+	/** Bouton de type lien pour navigation contextuelle. */
 	private JButton createLinkButton(String text)
 	{
 		return createButton(text, new Color(10, 16, 23), COLOR_LINK, COLOR_BORDER);
 	}
 
+	/** Cree un bouton menu avec titre + sous-titre en HTML. */
 	private JButton createMenuActionButton(String title, String subtitle, Color titleColor)
 	{
 		String html = "<html><div style='font-family:monospace;line-height:1.25;'>"
@@ -1655,6 +1934,7 @@ public class PersonnelFrame extends JFrame
 		return button;
 	}
 
+	/** Configure un JTable sombre pour les listes ligues/employes. */
 	private JTable createDarkTable(DefaultTableModel model)
 	{
 		JTable table = new JTable(model);
@@ -1676,6 +1956,7 @@ public class PersonnelFrame extends JFrame
 		return table;
 	}
 
+	/** Encapsule une table dans un scrollpane style maquette. */
 	private JScrollPane wrapTable(JTable table)
 	{
 		JScrollPane scrollPane = new JScrollPane(table);
@@ -1684,6 +1965,7 @@ public class PersonnelFrame extends JFrame
 		return scrollPane;
 	}
 
+	/** Cree une zone texte de lecture seule pour afficher les fiches detail. */
 	private JTextArea createInfoArea()
 	{
 		JTextArea area = new JTextArea();
@@ -1697,6 +1979,7 @@ public class PersonnelFrame extends JFrame
 		return area;
 	}
 
+	/** Encapsule une zone texte dans un scrollpane encadre. */
 	private JComponent wrapArea(JTextArea area)
 	{
 		JScrollPane scrollPane = new JScrollPane(area);
@@ -1706,6 +1989,7 @@ public class PersonnelFrame extends JFrame
 		return scrollPane;
 	}
 
+	/** Place un composant aligne a gauche. */
 	private JPanel leftAligned(JComponent component)
 	{
 		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -1714,6 +1998,7 @@ public class PersonnelFrame extends JFrame
 		return panel;
 	}
 
+	/** Cree une ligne separatrice visuelle. */
 	private JComponent createDivider()
 	{
 		JPanel divider = new JPanel();
@@ -1723,50 +2008,59 @@ public class PersonnelFrame extends JFrame
 		return divider;
 	}
 
+	/** Formate le nom court d'un employe : Nom Prenom. */
 	private String formatEmployeShort(Employe employe)
 	{
 		return safeValue(employe.getNom()) + " " + safeValue(employe.getPrenom());
 	}
 
+	/** Construit le libelle de role affiche dans la fiche employe. */
 	private String buildRoleLabel(Employe employe)
 	{
 		if (employe.estRoot())
 			return "super-utilisateur";
 		if (currentLigue != null && employe.estAdmin(currentLigue))
 			return "Admin " + currentLigue.getNom();
-		return "Employe";
+		return "Utilisateur standard";
 	}
 
+	/** Formate une date, avec tiret quand la valeur est absente. */
 	private String formatDate(LocalDate date)
 	{
 		return date == null ? "-" : date.toString();
 	}
 
+	/** Retourne un texte sur, jamais vide (fallback sur -). */
 	private String safeValue(String value)
 	{
 		return value == null || value.trim().isEmpty() ? "-" : value;
 	}
 
+	/** Convertit une couleur Java en code hexadecimal CSS (#rrggbb). */
 	private String toHex(Color color)
 	{
 		return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
 	}
 
+	/** Affiche une information utilisateur. */
 	private void showInfo(String message)
 	{
 		JOptionPane.showMessageDialog(this, message, "Information", JOptionPane.INFORMATION_MESSAGE);
 	}
 
+	/** Affiche une erreur metier/technique. */
 	private void showError(String title, Exception exception)
 	{
 		JOptionPane.showMessageDialog(this, exception.getMessage(), title, JOptionPane.ERROR_MESSAGE);
 	}
 
+	/** Lance la fenetre sur le thread Swing. */
 	public static void launch(GestionPersonnel gestionPersonnel)
 	{
 		SwingUtilities.invokeLater(() -> new PersonnelFrame(gestionPersonnel).setVisible(true));
 	}
 
+	/** Couple valeur metier + libelle lisible pour les choix d'admin. */
 	private static final class EmployeChoice
 	{
 		private final Employe employe;
@@ -1785,6 +2079,7 @@ public class PersonnelFrame extends JFrame
 		}
 	}
 
+	/** Objet temporaire pour transporter les donnees du formulaire d'ajout employe. */
 	private static final class EmployeDraft
 	{
 		private final String nom;
@@ -1805,6 +2100,31 @@ public class PersonnelFrame extends JFrame
 		}
 	}
 
+	/**
+	 * Conteneur vertical avec espacement automatique entre blocs.
+	 */
+	private static final class VerticalStackPanel extends JPanel
+	{
+		private final int gap;
+
+		private VerticalStackPanel(int gap)
+		{
+			super();
+			this.gap = gap;
+			setOpaque(false);
+			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		}
+
+		@Override
+		public Component add(Component comp)
+		{
+			if (getComponentCount() > 0)
+				super.add(Box.createVerticalStrut(gap));
+			return super.add(comp);
+		}
+	}
+
+	/** TableModel non editable pour garder un tableau purement consultatif. */
 	private static class ReadOnlyTableModel extends DefaultTableModel
 	{
 		private ReadOnlyTableModel(String[] columns)
