@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 import personnel.*;
 
@@ -18,71 +20,73 @@ public class JDBC implements Passerelle {
             Class.forName(Credentials.getDriverClassName());
             connection = DriverManager.getConnection(Credentials.getUrl(), Credentials.getUser(), Credentials.getPassword());
         } catch (ClassNotFoundException e) {
-            System.out.println("Pilote JDBC non installé.");
+            throw new IllegalStateException("Pilote JDBC non installe.", e);
         } catch (SQLException e) {
-            System.out.println(e);
+            throw new IllegalStateException("Connexion JDBC impossible.", e);
         }
     }
 
     @Override
     public GestionPersonnel getGestionPersonnel() {
         GestionPersonnel gestionPersonnel = new GestionPersonnel();
+        Map<Integer, Ligue> liguesById = new HashMap<>();
+
         try {
-            /** Chargement des ligues */
-            String requete = "select * from LIGUE";
-            Statement instruction = connection.createStatement();
-            ResultSet ligues = instruction.executeQuery(requete);
+            String requeteLigues =
+                    "select l.id_ligue, l.nom_ligue, " +
+                    "e.id_employe, e.nom_employe, e.prenom_employe, e.mail_employe, e.password_employe, " +
+                    "e.date_arrivee_employe, e.date_départ_employe, e.rôle_employe " +
+                    "from LIGUE l left join EMPLOYE e on e.id_ligue = l.id_ligue " +
+                    "order by l.id_ligue, e.id_employe";
 
-            String reqEmp = "select * from EMPLOYE where id_ligue = ?";
-            PreparedStatement psEmp = connection.prepareStatement(reqEmp);
+            try (Statement instruction = connection.createStatement();
+                 ResultSet lignes = instruction.executeQuery(requeteLigues)) {
+                while (lignes.next()) {
+                    int idLigue = lignes.getInt("id_ligue");
+                    Ligue ligue = liguesById.get(idLigue);
+                    if (ligue == null) {
+                        ligue = gestionPersonnel.addLigue(idLigue, lignes.getString("nom_ligue"));
+                        liguesById.put(idLigue, ligue);
+                    }
 
-            while (ligues.next()) {
-                int idLigue = ligues.getInt("id_ligue");
-                Ligue ligue = gestionPersonnel.addLigue(idLigue, ligues.getString("nom_ligue"));
-
-                /** Chargement des employés de la ligue */
-                psEmp.setInt(1, idLigue);
-                try (ResultSet rsEmp = psEmp.executeQuery()) {
-                    while (rsEmp.next()) {
-                        int idEmp = rsEmp.getInt("id_employe");
-                        String role = rsEmp.getString("rôle_employe");
-
-                        Employe e = ligue.addEmploye(
+                    Object idEmpObject = lignes.getObject("id_employe");
+                    if (idEmpObject != null) {
+                        int idEmp = ((Number) idEmpObject).intValue();
+                        Employe employe = ligue.addEmploye(
                                 idEmp,
-                                rsEmp.getString("nom_employe"),
-                                rsEmp.getString("prenom_employe"),
-                                rsEmp.getString("mail_employe"),
-                                rsEmp.getString("password_employe"),
-                                rsEmp.getDate("date_arrivee_employe") != null ? rsEmp.getDate("date_arrivee_employe").toLocalDate() : null,
-                                rsEmp.getString("date_départ_employe") != null && !rsEmp.getString("date_départ_employe").isEmpty()
-                                        ? LocalDate.parse(rsEmp.getString("date_départ_employe")) : null
+                                lignes.getString("nom_employe"),
+                                lignes.getString("prenom_employe"),
+                                lignes.getString("mail_employe"),
+                                lignes.getString("password_employe"),
+                                lignes.getDate("date_arrivee_employe") != null ? lignes.getDate("date_arrivee_employe").toLocalDate() : null,
+                                parseOptionalLocalDate(lignes.getString("date_départ_employe"))
                         );
 
-                        if ("admin".equalsIgnoreCase(role)) {
-                            ligue.setAdministrateurFromJDBC(e);
-                        }
+                        if ("admin".equalsIgnoreCase(lignes.getString("rôle_employe")))
+                            ligue.setAdministrateurFromJDBC(employe);
                     }
                 }
             }
 
-            /** Chargement du Root */
-            requete = "select * from EMPLOYE where id_ligue is null limit 1";
-            ResultSet roots = instruction.executeQuery(requete);
-            if (roots.next()) {
-                gestionPersonnel.addRoot(
-                        roots.getInt("id_employe"),
-                        roots.getString("nom_employe"),
-                        roots.getString("prenom_employe"),
-                        roots.getString("mail_employe"),
-                        roots.getString("password_employe"),
-                        roots.getDate("date_arrivee_employe") != null ? roots.getDate("date_arrivee_employe").toLocalDate() : null,
-                        roots.getString("date_départ_employe") != null && !roots.getString("date_départ_employe").isEmpty()
-                                ? LocalDate.parse(roots.getString("date_départ_employe")) : null);
-            } else {
-                gestionPersonnel.addRoot("root", "toor");
+            String requeteRoot = "select * from EMPLOYE where id_ligue is null limit 1";
+            try (Statement instructionRoot = connection.createStatement();
+                 ResultSet roots = instructionRoot.executeQuery(requeteRoot)) {
+                if (roots.next()) {
+                    gestionPersonnel.addRoot(
+                            roots.getInt("id_employe"),
+                            roots.getString("nom_employe"),
+                            roots.getString("prenom_employe"),
+                            roots.getString("mail_employe"),
+                            roots.getString("password_employe"),
+                            roots.getDate("date_arrivee_employe") != null ? roots.getDate("date_arrivee_employe").toLocalDate() : null,
+                            parseOptionalLocalDate(roots.getString("date_départ_employe"))
+                    );
+                } else {
+                    gestionPersonnel.addRoot("root", "toor");
+                }
             }
         } catch (SQLException | SauvegardeImpossible | DateInvalide e) {
-            System.out.println(e);
+            throw new IllegalStateException("Impossible de charger les donnees depuis la base.", e);
         }
         return gestionPersonnel;
     }
@@ -186,6 +190,39 @@ public class JDBC implements Passerelle {
     }
 
     @Override
+    public int delete(Ligue ligue) throws SauvegardeImpossible {
+        int deletedLigues;
+        try {
+            connection.setAutoCommit(false);
+
+            try (PreparedStatement deleteEmployes = connection.prepareStatement("delete from EMPLOYE where id_ligue = ?");
+                 PreparedStatement deleteLigue = connection.prepareStatement("delete from LIGUE where id_ligue = ?")) {
+
+                deleteEmployes.setInt(1, ligue.getId());
+                deleteEmployes.executeUpdate();
+
+                deleteLigue.setInt(1, ligue.getId());
+                deletedLigues = deleteLigue.executeUpdate();
+            }
+
+            connection.commit();
+        } catch (SQLException exception) {
+            try {
+                connection.rollback();
+            } catch (SQLException rollbackException) {
+                exception.addSuppressed(rollbackException);
+            }
+            throw new SauvegardeImpossible(exception);
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException ignored) {
+            }
+        }
+        return deletedLigues;
+    }
+
+    @Override
     public int delete(Employe employe) throws SauvegardeImpossible {
         try {
             PreparedStatement instruction = connection.prepareStatement("delete from EMPLOYE where id_employe = ?");
@@ -194,5 +231,12 @@ public class JDBC implements Passerelle {
         } catch (SQLException exception) {
             throw new SauvegardeImpossible(exception);
         }
+    }
+
+    private LocalDate parseOptionalLocalDate(String sqlDate)
+    {
+        if (sqlDate == null || sqlDate.trim().isEmpty())
+            return null;
+        return LocalDate.parse(sqlDate);
     }
 }

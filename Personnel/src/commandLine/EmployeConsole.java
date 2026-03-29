@@ -41,23 +41,63 @@ public class EmployeConsole
 	private Option changerNom(final Employe employe)
 	{
 		return new Option("Changer le nom", "n", 
-				() -> {employe.setNom(getString("Nouveau nom : "));}
+                () ->
+                {
+                    try
+                    {
+                        employe.setNom(getString("Nouveau nom : "));
+                    }
+                    catch (SauvegardeImpossible e)
+                    {
+                        System.out.println(e.getMessage());
+                    }
+                }
 			);
 	}
 	
 	private Option changerPrenom(final Employe employe)
 	{
-		return new Option("Changer le prénom", "p", () -> {employe.setPrenom(getString("Nouveau prénom : "));});
+        return new Option("Changer le prénom", "p", () ->
+        {
+            try
+            {
+                employe.setPrenom(getString("Nouveau prénom : "));
+            }
+            catch (SauvegardeImpossible e)
+            {
+                System.out.println(e.getMessage());
+            }
+        });
 	}
 	
 	private Option changerMail(final Employe employe)
 	{
-		return new Option("Changer le mail", "e", () -> {employe.setMail(getString("Nouveau mail : "));});
+        return new Option("Changer le mail", "e", () ->
+        {
+            try
+            {
+                employe.setMail(getString("Nouveau mail : "));
+            }
+            catch (SauvegardeImpossible e)
+            {
+                System.out.println(e.getMessage());
+            }
+        });
 	}
 	
 	private Option changerPassword(final Employe employe)
 	{
-		return new Option("Changer le password", "x", () -> {employe.setPassword(getString("Nouveau password : "));});
+        return new Option("Changer le password", "x", () ->
+        {
+            try
+            {
+                employe.setPassword(getString("Nouveau password : "));
+            }
+            catch (SauvegardeImpossible e)
+            {
+                System.out.println(e.getMessage());
+            }
+        });
 	}
     private Option changerDateArrivee(final Employe employe)
     {
@@ -77,6 +117,10 @@ public class EmployeConsole
                     {
                         System.out.println(e.getMessage());
                     }
+                    catch (SauvegardeImpossible e)
+                    {
+                        System.out.println(e.getMessage());
+                    }
                 }
         );
     }
@@ -88,13 +132,17 @@ public class EmployeConsole
                     try
                     {
                         String strdd = getString("Nouvelle date de départ (yyyy-mm-dd): ");
-                        employe.setDateArrivee(LocalDate.parse(strdd));
+                        employe.setDateDepart(LocalDate.parse(strdd));
                     }
                     catch (DateTimeParseException e)
                     {
                         System.out.println("La date doit être au format yyyy-mm-dd. exemple : 2000-01-01");
                     }
                     catch (DateInvalide e)
+                    {
+                        System.out.println(e.getMessage());
+                    }
+                    catch (SauvegardeImpossible e)
                     {
                         System.out.println(e.getMessage());
                     }

@@ -46,7 +46,7 @@ public class GestionPersonnel implements Serializable
 				}
 				catch (SauvegardeImpossible e)
 				{
-					System.out.println(e.getMessage());
+					throw new IllegalStateException("Impossible de creer le root par defaut.", e);
 				}
 			}
 		}
@@ -114,6 +114,11 @@ public class GestionPersonnel implements Serializable
 		passerelle.delete(employe);
 	}
 
+	public void delete(Ligue ligue) throws SauvegardeImpossible
+	{
+		passerelle.delete(ligue);
+	}
+
 	int insert(Ligue ligue) throws SauvegardeImpossible
 	{
 		return passerelle.insert(ligue);
@@ -158,8 +163,7 @@ public class GestionPersonnel implements Serializable
 		}
 		catch (DateInvalide e)
 		{
-			// Pas de date, pas d'exception possible
-			System.out.println(e.getMessage());
+			throw new IllegalStateException("Etat de date invalide pour la creation du root.", e);
 		}
 	}
 
@@ -176,7 +180,7 @@ public class GestionPersonnel implements Serializable
 		}
 		catch (DateInvalide e)
 		{
-			System.out.println(e.getMessage());
+			throw new IllegalStateException("Impossible de charger le root depuis la base.", e);
 		}
 	}
 

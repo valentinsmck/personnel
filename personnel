@@ -1,0 +1,66 @@
+#!/bin/bash
+
+# Script de lancement - Personnel Management Application
+# Utilisation: ./personnel [options]
+
+set -e
+
+# Configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+JAR_FILE="$SCRIPT_DIR/Personnel/target/Personnel.jar"
+JAVA_CMD="java"
+
+# Prefer a Java runtime that matches javac (often full JDK with Swing support).
+if [ -n "${JAVA_HOME:-}" ] && [ -x "${JAVA_HOME}/bin/java" ]; then
+    JAVA_CMD="${JAVA_HOME}/bin/java"
+elif command -v javac >/dev/null 2>&1; then
+    JAVAC_PATH="$(command -v javac)"
+    JAVAC_DIR="$(cd "$(dirname "$JAVAC_PATH")" && pwd)"
+    if [ -x "${JAVAC_DIR}/java" ]; then
+        JAVA_CMD="${JAVAC_DIR}/java"
+    fi
+fi
+
+# Couleurs pour les messages
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Vérifier que Java est installé
+if ! command -v $JAVA_CMD &> /dev/null; then
+    echo -e "${RED}❌ Erreur: Java n'est pas installé.${NC}"
+    echo "Merci d'installer Java 8 ou supérieur."
+    exit 1
+fi
+
+# Vérifier que le JAR existe
+if [ ! -f "$JAR_FILE" ]; then
+    echo -e "${YELLOW}⚠️  JAR non trouvé. Compilation en cours...${NC}"
+    cd "$SCRIPT_DIR/Personnel"
+    mvn -DskipTests clean package -q
+    cd "$SCRIPT_DIR"
+fi
+
+# Vérifier que MySQL est accessible
+if ! nc -z localhost 3306 2>/dev/null; then
+    echo -e "${YELLOW}⚠️  Attention: MySQL ne semble pas accessible sur localhost:3306${NC}"
+    echo "L'application tentera de se connecter quand même..."
+    echo ""
+fi
+
+# Lancer l'application
+echo -e "${GREEN}🚀 Lancement de Personnel...${NC}"
+APP_ARGS=("$@")
+if [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ]; then
+    echo "Aucun serveur graphique detecte. Demarrage en mode console."
+    APP_ARGS=("--cli" "${APP_ARGS[@]}")
+fi
+
+$JAVA_CMD -Dfile.encoding=UTF-8 -jar "$JAR_FILE" "${APP_ARGS[@]}"
+
+exit_code=$?
+if [ $exit_code -ne 0 ]; then
+    echo -e "${RED}❌ L'application s'est fermée avec le code: $exit_code${NC}"
+    exit $exit_code
+fi

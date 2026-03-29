@@ -1,6 +1,5 @@
 package personnel;
 
-import javax.sound.sampled.FloatControl;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Collections;
@@ -168,8 +167,11 @@ public class Ligue implements Serializable, Comparable<Ligue>
      * de la ligue.
      */
 
-    public void remove()
+    public void remove() throws SauvegardeImpossible
     {
+        gestionPersonnel.delete(this);
+        employes.clear();
+        administrateur = gestionPersonnel.getRoot();
         gestionPersonnel.remove(this);
     }
 

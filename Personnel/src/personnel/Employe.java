@@ -17,14 +17,14 @@ public class Employe implements Serializable, Comparable<Employe>
 	private String nom, prenom, password, mail;
 	private Ligue ligue;
 	private GestionPersonnel gestionPersonnel;
-    private LocalDate dateArrivee,dateDepart;
+	private LocalDate dateArrivee, dateDepart;
 	private int id = -1;
 
-    Employe(GestionPersonnel gestionPersonnel, Ligue ligue, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide, SauvegardeImpossible
-    {
-        this(gestionPersonnel, -1, ligue, nom, prenom, mail, password, dateArrivee, dateDepart);
-        this.id = gestionPersonnel.insert(this);
-    }
+	Employe(GestionPersonnel gestionPersonnel, Ligue ligue, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide, SauvegardeImpossible
+	{
+		this(gestionPersonnel, -1, ligue, nom, prenom, mail, password, dateArrivee, dateDepart);
+		this.id = gestionPersonnel.insert(this);
+	}
 
 	Employe(GestionPersonnel gestionPersonnel, int id, Ligue ligue, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide
 	{
@@ -32,11 +32,13 @@ public class Employe implements Serializable, Comparable<Employe>
 		this.id = id;
 		this.nom = nom;
 		this.prenom = prenom;
-		this.password = password;
+		this.password = PasswordHasher.normalizeStoredPassword(password);
 		this.mail = mail;
 		this.ligue = ligue;
-		setDateArrivee(dateArrivee);
-		setDateDepart(dateDepart);
+		validateDateArrivee(dateArrivee);
+		validateDateDepart(dateArrivee, dateDepart);
+		this.dateArrivee = dateArrivee;
+		this.dateDepart = dateDepart;
 	}
 
 	/**
@@ -78,9 +80,10 @@ public class Employe implements Serializable, Comparable<Employe>
 	 * @param nom le nouveau nom.
 	 */
 	
-	public void setNom(String nom)
+	public void setNom(String nom) throws SauvegardeImpossible
 	{
 		this.nom = nom;
+		persistUpdate();
 	}
 
 	/**
@@ -98,9 +101,10 @@ public class Employe implements Serializable, Comparable<Employe>
 	 * @param prenom le nouveau prénom de l'employé. 
 	 */
 
-	public void setPrenom(String prenom)
+	public void setPrenom(String prenom) throws SauvegardeImpossible
 	{
 		this.prenom = prenom;
+		persistUpdate();
 	}
 
 	/**
@@ -118,9 +122,10 @@ public class Employe implements Serializable, Comparable<Employe>
 	 * @param mail le nouveau mail de l'employé.
 	 */
 
-	public void setMail(String mail)
+	public void setMail(String mail) throws SauvegardeImpossible
 	{
 		this.mail = mail;
+		persistUpdate();
 	}
 
 	/**
@@ -128,7 +133,10 @@ public class Employe implements Serializable, Comparable<Employe>
 	 * @return l'id de l'employé.
 	*/
 
-	 public int getId() { return id; }
+	public int getId()
+	{
+		return id;
+	}
 
 	/**
 	 * Retourne vrai ssi le password passé en paramètre est bien celui
@@ -140,7 +148,7 @@ public class Employe implements Serializable, Comparable<Employe>
 	
 	public boolean checkPassword(String password)
 	{
-		return this.password.equals(password);
+		return PasswordHasher.checkPassword(password, this.password);
 	}
 
 	/**
@@ -148,9 +156,10 @@ public class Employe implements Serializable, Comparable<Employe>
 	 * @param password le nouveau password de l'employé. 
 	 */
 	
-	public void setPassword(String password)
+	public void setPassword(String password) throws SauvegardeImpossible
 	{
-		this.password= password;
+		this.password = PasswordHasher.hashPassword(password);
+		persistUpdate();
 	}
 
 	/**
@@ -177,45 +186,60 @@ public class Employe implements Serializable, Comparable<Employe>
      * Retourne la date d'arrivée de l'employé
      * @return dateArrivee de l'employé
      */
-    public LocalDate getDateArrivee()
-    {
-        return dateArrivee;
-    }
+	public LocalDate getDateArrivee()
+	{
+		return dateArrivee;
+	}
 
     /**
      * Change la date d'arrivée de l'employé
      * @param dateArrivee la nouvelle date d'arrivée de l'employé
      */
-    public void setDateArrivee(LocalDate dateArrivee) throws DateInvalide
-    {
-        if(dateArrivee!=null && dateArrivee.isAfter(LocalDate.now()))
-        {
-            throw new DateInvalide("La date d'arrivée ne peut pas être au plus tard que la date actuelle.");
-        }
-        this.dateArrivee = dateArrivee;
-    }
+	public void setDateArrivee(LocalDate dateArrivee) throws DateInvalide, SauvegardeImpossible
+	{
+		validateDateArrivee(dateArrivee);
+		validateDateDepart(dateArrivee, this.dateDepart);
+		this.dateArrivee = dateArrivee;
+		persistUpdate();
+	}
 
     /**
      * Retourne la date de départ de l'employé
      * @return dateDepart de l'employé
      */
-    public LocalDate getDateDepart()
-    {
-        return dateDepart;
-    }
+	public LocalDate getDateDepart()
+	{
+		return dateDepart;
+	}
 
     /**
      * Change la date de départ de l'employé
      * @param dateDepart la nouvelle date de départ de l'employé
      */
-    public void setDateDepart(LocalDate dateDepart) throws DateInvalide
-    {
-        if (dateDepart!=null && dateDepart.isBefore(dateArrivee))
-        {
-            throw new DateInvalide("La date de départ ne peut pas être avant la date d'arrivée");
-        }
-        this.dateDepart = dateDepart;
-    }
+	public void setDateDepart(LocalDate dateDepart) throws DateInvalide, SauvegardeImpossible
+	{
+		validateDateDepart(this.dateArrivee, dateDepart);
+		this.dateDepart = dateDepart;
+		persistUpdate();
+	}
+
+	private void persistUpdate() throws SauvegardeImpossible
+	{
+		if (id > 0)
+			gestionPersonnel.update(this);
+	}
+
+	private void validateDateArrivee(LocalDate dateArrivee) throws DateInvalide
+	{
+		if (dateArrivee != null && dateArrivee.isAfter(LocalDate.now()))
+			throw new DateInvalide("La date d'arrivee ne peut pas etre posterieure a la date actuelle.");
+	}
+
+	private void validateDateDepart(LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide
+	{
+		if (dateDepart != null && dateArrivee != null && dateDepart.isBefore(dateArrivee))
+			throw new DateInvalide("La date de depart ne peut pas etre avant la date d'arrivee.");
+	}
 	/**
 	 * Supprime l'employé. Si celui-ci est un administrateur, le root
 	 * récupère les droits d'administration sur sa ligue.
