@@ -132,4 +132,22 @@ public class JDBC implements Passerelle
             throw new SauvegardeImpossible(exception);
         }
     }
+    public void update(Ligue ligue) throws SauvegardeImpossible
+    {
+        try
+        {
+            PreparedStatement instruction;
+            instruction = connection.prepareStatement("update ligue set nom_ligue = ? WHERE id_ligue = ?");
+            instruction.setString(1, ligue.getNom());
+            instruction.setInt(2, ligue.getId());
+
+            instruction.executeUpdate();
+
+        }
+        catch (SQLException exception)
+        {
+            exception.printStackTrace();
+            throw new SauvegardeImpossible(exception);
+        }
+    }
 }
