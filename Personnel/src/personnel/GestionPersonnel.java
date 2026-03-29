@@ -66,6 +66,11 @@ public class GestionPersonnel implements Serializable
     {
         this.root= new Employe(this, null, nom, "", "", password, null,null);
     }
+
+    public void addRoot(int id,String nom, String prenom,String mail,String password,LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide, SauvegardeImpossible
+    {
+        this.root= new Employe(this, null, id, nom, prenom, mail, password, dateArrivee,dateDepart);
+    }
 	
 	public void sauvegarder() throws SauvegardeImpossible
 	{

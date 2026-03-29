@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 
 import personnel.*;
 
@@ -31,7 +32,7 @@ public class JDBC implements Passerelle
 	}
 	
 	@Override
-	public GestionPersonnel getGestionPersonnel() 
+	public GestionPersonnel getGestionPersonnel()
 	{
 		GestionPersonnel gestionPersonnel = new GestionPersonnel();
 		try 
@@ -41,11 +42,24 @@ public class JDBC implements Passerelle
 			ResultSet ligues = instruction.executeQuery(requete);
 			while (ligues.next())
 				gestionPersonnel.addLigue(ligues.getInt(1), ligues.getString(2));
+
+            PreparedStatement instructionRoot = connection.prepareStatement("select * from EMPLOYE where id_ligue is NULL");
+            ResultSet root = instructionRoot.executeQuery();
+            if (root.next())
+            {
+                gestionPersonnel.addRoot(root.getInt("id_employe"), root.getString("nom_employe"), root.getString("prenom_employe"), root.getString("mail_employe"), root.getString("password_employe"), root.getObject("date_arrivee_employe", LocalDate.class), root.getObject("date_depart_employe", LocalDate.class));
+            }
 		}
 		catch (SQLException e)
 		{
 			System.out.println(e);
 		}
+        catch (SauvegardeImpossible e){
+            System.out.println(e.getMessage());
+        }
+        catch (DateInvalide e){
+            System.out.println(e.getMessage());
+        }
 		return gestionPersonnel;
 	}
 
