@@ -3,12 +3,12 @@ package gui;
 import commandLine.PersonnelConsole;
 import personnel.GestionPersonnel;
 
-import javax.swing.JOptionPane;
-import javax.swing.JPasswordField;
 import javax.swing.SwingUtilities;
 
 public class PersonnelApp
 {
+	private static final String LINE = "============================================================";
+
 	public static void main(String[] args)
 	{
 		if (forceCliMode(args) || !canRunSwing())
@@ -22,14 +22,12 @@ public class PersonnelApp
 			try
 			{
 				GestionPersonnel gestionPersonnel = GestionPersonnel.getGestionPersonnel();
-				if (!authenticateRoot(gestionPersonnel))
-					return;
 				PersonnelFrame.launch(gestionPersonnel);
 			}
 			catch (Exception e)
 			{
 				System.err.println("Erreur GUI: " + e.getMessage());
-				System.exit(1);
+				launchCLI();
 			}
 		});
 	}
@@ -58,10 +56,10 @@ public class PersonnelApp
 
 	private static void launchCLI()
 	{
-		System.out.println("=".repeat(60));
+		System.out.println(LINE);
 		System.out.println("  PERSONNEL - Mode Console");
 		System.out.println("  (Pas d'interface graphique disponible)");
-		System.out.println("=".repeat(60));
+		System.out.println(LINE);
 		System.out.println();
 
 		try
@@ -73,36 +71,6 @@ public class PersonnelApp
 			System.err.println("❌ Erreur: " + e.getMessage());
 			e.printStackTrace();
 			System.exit(1);
-		}
-	}
-
-	private static boolean authenticateRoot(GestionPersonnel gestionPersonnel)
-	{
-		personnel.Employe root = gestionPersonnel.getRoot();
-		while (true)
-		{
-			JPasswordField passwordField = new JPasswordField();
-			int result = JOptionPane.showConfirmDialog(
-					null,
-					passwordField,
-					"Connexion root - entrez le mot de passe",
-					JOptionPane.OK_CANCEL_OPTION,
-					JOptionPane.PLAIN_MESSAGE
-			);
-
-			if (result != JOptionPane.OK_OPTION)
-				return false;
-
-			String password = new String(passwordField.getPassword());
-			if (root.checkPassword(password))
-				return true;
-
-			JOptionPane.showMessageDialog(
-					null,
-					"Mot de passe incorrect.",
-					"Authentification",
-					JOptionPane.WARNING_MESSAGE
-			);
 		}
 	}
 
