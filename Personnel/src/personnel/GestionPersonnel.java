@@ -50,13 +50,22 @@ public class GestionPersonnel implements Serializable
 		ligues = new TreeSet<>();
 		gestionPersonnel = this;
         try {
-            this.root= new Employe(this, null, "root", "", "", "toor", null,null);
+            addRoot("root","toor");
         }
         catch (DateInvalide e)
         {
             System.out.println(e.getMessage());
         }
+        catch (SauvegardeImpossible e)
+        {
+            System.out.println(e.getMessage());
+        }
 	}
+
+    public void addRoot(String nom, String password) throws DateInvalide, SauvegardeImpossible
+    {
+        this.root= new Employe(this, null, nom, "", "", password, null,null);
+    }
 	
 	public void sauvegarder() throws SauvegardeImpossible
 	{
@@ -111,6 +120,11 @@ public class GestionPersonnel implements Serializable
 	{
 		return passerelle.insert(ligue);
 	}
+
+    int insert(Employe employe) throws SauvegardeImpossible
+    {
+        return passerelle.insert(employe);
+    }
 
 	/**
 	 * Retourne le root (super-utilisateur).

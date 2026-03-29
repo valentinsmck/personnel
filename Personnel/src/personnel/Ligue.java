@@ -44,6 +44,15 @@ public class Ligue implements Serializable, Comparable<Ligue>
 		this.id = id;
 	}
 
+    /**
+     * Retourne l'id de la ligue.
+     * @return l'id de la ligue.
+     */
+
+    public int getId() {
+        return id;
+    }
+
 	/**
 	 * Retourne le nom de la ligue.
 	 * @return le nom de la ligue.
@@ -110,7 +119,7 @@ public class Ligue implements Serializable, Comparable<Ligue>
 	 * @return l'employé créé. 
 	 */
 
-	public Employe addEmploye(String nom, String prenom, String mail, String password,LocalDate dateArrivee,LocalDate dateDepart) throws DateInvalide
+	public Employe addEmploye(String nom, String prenom, String mail, String password,LocalDate dateArrivee,LocalDate dateDepart) throws DateInvalide, SauvegardeImpossible
 	{
 		Employe employe = new Employe(this.gestionPersonnel, this, nom, prenom, mail, password,dateArrivee,dateDepart);
 		employes.add(employe);
@@ -131,7 +140,7 @@ public class Ligue implements Serializable, Comparable<Ligue>
 	{
 		gestionPersonnel.remove(this);
 	}
-	
+
 
 	@Override
 	public int compareTo(Ligue autre)

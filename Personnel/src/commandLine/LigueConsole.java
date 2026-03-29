@@ -116,6 +116,10 @@ public class LigueConsole
                     {
                         System.out.println(e.getMessage());
                     }
+                    catch (SauvegardeImpossible e)
+                    {
+                        System.out.println(e.getMessage());
+                    }
                 }
 		);
     }

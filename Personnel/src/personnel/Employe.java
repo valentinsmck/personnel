@@ -18,10 +18,18 @@ public class Employe implements Serializable, Comparable<Employe>
 	private Ligue ligue;
 	private GestionPersonnel gestionPersonnel;
     private LocalDate dateArrivee,dateDepart;
+    private int id = -1;
 
-    Employe(GestionPersonnel gestionPersonnel, Ligue ligue, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide
+    Employe(GestionPersonnel gestionPersonnel, Ligue ligue, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws SauvegardeImpossible , DateInvalide
+    {
+        this(gestionPersonnel,ligue,-1 , nom, prenom, mail, password, dateArrivee, dateDepart);
+        this.id = gestionPersonnel.insert(this);
+    }
+
+    Employe(GestionPersonnel gestionPersonnel, Ligue ligue, int id, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide
     {
         this.gestionPersonnel = gestionPersonnel;
+        this.id = id;
         this.nom = nom;
         this.prenom = prenom;
         this.password = password;
@@ -31,7 +39,8 @@ public class Employe implements Serializable, Comparable<Employe>
         setDateDepart(dateDepart);
     }
 
-	/**
+
+    /**
 	 * Retourne vrai ssi l'employé est administrateur de la ligue
 	 * passée en paramètre.
 	 * @return vrai ssi l'employé est administrateur de la ligue
@@ -45,7 +54,7 @@ public class Employe implements Serializable, Comparable<Employe>
 		return ligue.getAdministrateur() == this;
 	}
 
-	/**
+    /**
 	 * Retourne vrai ssi l'employé est le root.
 	 * @return vrai ssi l'employé est le root.
 	 */
@@ -137,6 +146,13 @@ public class Employe implements Serializable, Comparable<Employe>
 	{
 		this.password= password;
 	}
+
+    /**
+     * Retourne le password de l'employé.
+     * @return le password de l'employé.
+     */
+
+    public String getPassword() { return password; }
 
 	/**
 	 * Retourne la ligue à laquelle l'employé est affecté.
