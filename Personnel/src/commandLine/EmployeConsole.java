@@ -7,6 +7,7 @@ import commandLineMenus.Menu;
 import commandLineMenus.Option;
 import personnel.DateInvalide;
 import personnel.Employe;
+import personnel.SauvegardeImpossible;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -40,23 +41,54 @@ public class EmployeConsole
 	private Option changerNom(final Employe employe)
 	{
 		return new Option("Changer le nom", "n", 
-				() -> {employe.setNom(getString("Nouveau nom : "));}
-			);
+				() -> {
+            try
+            {
+                employe.setNom(getString("Nouveau nom : "));
+            }
+            catch (SauvegardeImpossible e){
+                System.out.println("Impossible de sauvegarder le changement de nom de l'employé.");
+            }
+
+            });
 	}
 	
 	private Option changerPrenom(final Employe employe)
 	{
-		return new Option("Changer le prénom", "p", () -> {employe.setPrenom(getString("Nouveau prénom : "));});
+		return new Option("Changer le prénom", "p", () -> {
+            try
+            {
+                employe.setPrenom(getString("Nouveau prénom : "));
+            }
+            catch (SauvegardeImpossible e){
+                System.out.println("Impossible de sauvergarder le changement de prénom de l'employé.");
+            }
+            });
 	}
 	
 	private Option changerMail(final Employe employe)
 	{
-		return new Option("Changer le mail", "e", () -> {employe.setMail(getString("Nouveau mail : "));});
+		return new Option("Changer le mail", "e", () -> {
+            try
+            {
+                employe.setMail(getString("Nouveau mail : "));
+            }
+            catch (SauvegardeImpossible e){
+                System.out.println("Impossible de sauvegarder le nouveau mail de l'employé");
+            }
+            });
 	}
 	
 	private Option changerPassword(final Employe employe)
 	{
-		return new Option("Changer le password", "x", () -> {employe.setPassword(getString("Nouveau password : "));});
+		return new Option("Changer le password", "x", () -> {
+            try{
+                employe.setPassword(getString("Nouveau password : "));
+            }
+            catch (SauvegardeImpossible e){
+                System.out.println("Impossible de sauvegarder le nouveau mot de passe");
+            }
+            });
 	}
     private Option changerDateArrivee(final Employe employe)
     {
@@ -75,6 +107,9 @@ public class EmployeConsole
                     catch (DateInvalide e)
                     {
                         System.out.println(e.getMessage());
+                    }
+                    catch (SauvegardeImpossible e){
+                        System.out.println("Impossible de sauvegarder la nouvelle date d'arrivée.");
                     }
                 }
         );
@@ -96,6 +131,9 @@ public class EmployeConsole
                     catch (DateInvalide e)
                     {
                         System.out.println(e.getMessage());
+                    }
+                    catch (SauvegardeImpossible e){
+                        System.out.println("Impossible de sauvegarder la nouvelle date de départ.");
                     }
                 }
                 );

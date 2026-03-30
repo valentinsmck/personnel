@@ -26,7 +26,7 @@ public class Employe implements Serializable, Comparable<Employe>
         this.id = gestionPersonnel.insert(this);
     }
 
-    Employe(GestionPersonnel gestionPersonnel, Ligue ligue, int id, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide
+    Employe(GestionPersonnel gestionPersonnel, Ligue ligue, int id, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws DateInvalide, SauvegardeImpossible
     {
         this.gestionPersonnel = gestionPersonnel;
         this.id = id;
@@ -79,9 +79,10 @@ public class Employe implements Serializable, Comparable<Employe>
 	 * @param nom le nouveau nom.
 	 */
 	
-	public void setNom(String nom)
+	public void setNom(String nom) throws SauvegardeImpossible
 	{
 		this.nom = nom;
+        gestionPersonnel.update(this);
 	}
 
 	/**
@@ -99,9 +100,10 @@ public class Employe implements Serializable, Comparable<Employe>
 	 * @param prenom le nouveau prénom de l'employé. 
 	 */
 
-	public void setPrenom(String prenom)
+	public void setPrenom(String prenom) throws SauvegardeImpossible
 	{
 		this.prenom = prenom;
+        gestionPersonnel.update(this);
 	}
 
 	/**
@@ -119,9 +121,10 @@ public class Employe implements Serializable, Comparable<Employe>
 	 * @param mail le nouveau mail de l'employé.
 	 */
 
-	public void setMail(String mail)
+	public void setMail(String mail) throws SauvegardeImpossible
 	{
 		this.mail = mail;
+        gestionPersonnel.update(this);
 	}
 
 	/**
@@ -142,9 +145,10 @@ public class Employe implements Serializable, Comparable<Employe>
 	 * @param password le nouveau password de l'employé. 
 	 */
 	
-	public void setPassword(String password)
+	public void setPassword(String password) throws SauvegardeImpossible
 	{
 		this.password= password;
+        gestionPersonnel.update(this);
 	}
 
     /**
@@ -153,6 +157,12 @@ public class Employe implements Serializable, Comparable<Employe>
      */
 
     public String getPassword() { return password; }
+
+    /**
+     * Retourne l'id de l'employé.
+     * @return l'id de l'employé.
+     */
+    public int getId() { return id; }
 
 	/**
 	 * Retourne la ligue à laquelle l'employé est affecté.
@@ -177,13 +187,14 @@ public class Employe implements Serializable, Comparable<Employe>
      * Change la date d'arrivée de l'employé
      * @param dateArrivee la nouvelle date d'arrivée de l'employé
      */
-    public void setDateArrivee(LocalDate dateArrivee) throws DateInvalide
+    public void setDateArrivee(LocalDate dateArrivee) throws DateInvalide, SauvegardeImpossible
     {
         if(dateArrivee!=null && dateArrivee.isAfter(LocalDate.now()))
         {
             throw new DateInvalide("La date d'arrivée ne peut pas être au plus tard que la date actuelle.");
         }
         this.dateArrivee = dateArrivee;
+        gestionPersonnel.update(this);
     }
 
     /**
@@ -199,13 +210,14 @@ public class Employe implements Serializable, Comparable<Employe>
      * Change la date de départ de l'employé
      * @param dateDepart la nouvelle date de départ de l'employé
      */
-    public void setDateDepart(LocalDate dateDepart) throws DateInvalide
+    public void setDateDepart(LocalDate dateDepart) throws DateInvalide, SauvegardeImpossible
     {
         if (dateDepart!=null && dateDepart.isBefore(dateArrivee))
         {
             throw new DateInvalide("La date de départ ne peut pas être avant la date d'arrivée");
         }
         this.dateDepart = dateDepart;
+        gestionPersonnel.update(this);
     }
 	/**
 	 * Supprime l'employé. Si celui-ci est un administrateur, le root
