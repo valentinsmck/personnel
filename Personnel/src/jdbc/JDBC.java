@@ -71,6 +71,8 @@ public class JDBC implements Passerelle
             ResultSet root = instructionRoot.executeQuery();
             if (root.next())
                 gestionPersonnel.addRoot(root.getInt("id_employe"), root.getString("nom_employe"), root.getString("prenom_employe"), root.getString("mail_employe"), root.getString("password_employe"), root.getObject("date_arrivee_employe", LocalDate.class), root.getObject("date_depart_employe", LocalDate.class));
+            else
+                gestionPersonnel.addRoot("root", "toor");
         }
 		catch (SQLException e)
 		{

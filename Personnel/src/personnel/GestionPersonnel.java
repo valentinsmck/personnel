@@ -49,17 +49,6 @@ public class GestionPersonnel implements Serializable
 			throw new RuntimeException("Vous ne pouvez créer qu'une seuls instance de cet objet.");
 		ligues = new TreeSet<>();
 		gestionPersonnel = this;
-        try {
-            addRoot("root","toor");
-        }
-        catch (DateInvalide e)
-        {
-            System.out.println(e.getMessage());
-        }
-        catch (SauvegardeImpossible e)
-        {
-            System.out.println(e.getMessage());
-        }
 	}
 
     public void addRoot(String nom, String password) throws DateInvalide, SauvegardeImpossible
