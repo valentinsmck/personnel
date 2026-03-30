@@ -131,9 +131,10 @@ public class Ligue implements Serializable, Comparable<Ligue>
         return employe;
     }
 	
-	void remove(Employe employe)
+	void remove(Employe employe) throws SauvegardeImpossible
 	{
 		employes.remove(employe);
+        gestionPersonnel.delete(this);
 	}
 	
 	/**
@@ -141,9 +142,10 @@ public class Ligue implements Serializable, Comparable<Ligue>
 	 * de la ligue.
 	 */
 	
-	public void remove()
+	public void remove() throws SauvegardeImpossible
 	{
 		gestionPersonnel.remove(this);
+        gestionPersonnel.delete(this);
 	}
 
 
