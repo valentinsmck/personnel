@@ -37,7 +37,7 @@ public class JDBC implements Passerelle
         GestionPersonnel gestionPersonnel = new GestionPersonnel();
         try
         {
-            String requete = "SELECT ligue.id_ligue, nom_ligue, id_employe, nom_employe, prenom_employe, mail_employe, password_employe, date_arrivee_employe, date_depart_employe FROM ligue LEFT JOIN employe ON ligue.id_ligue = employe.id_ligue ORDER BY ligue.id_ligue";
+            String requete = "SELECT ligue.id_ligue, nom_ligue, id_employe, nom_employe, prenom_employe, mail_employe, password_employe, date_arrivee_employe, date_depart_employe, role_employe FROM ligue LEFT JOIN employe ON ligue.id_ligue = employe.id_ligue ORDER BY ligue.id_ligue";
             Statement instruction = connection.createStatement();
             ResultSet result = instruction.executeQuery(requete);
 
@@ -50,7 +50,21 @@ public class JDBC implements Passerelle
                 if (ligueActuelle == null || ligueActuelle.getId() != idLigue)
                     ligueActuelle = gestionPersonnel.addLigue(idLigue, result.getString("nom_ligue"));
 
-                if (result.getObject("id_employe") != null) ligueActuelle.addEmploye(result.getInt("id_employe"), result.getString("nom_employe"), result.getString("prenom_employe"), result.getString("mail_employe"), result.getString("password_employe"), result.getObject("date_arrivee_employe", LocalDate.class), result.getObject("date_depart_employe", LocalDate.class));
+                if (result.getObject("id_employe") != null)
+                {
+                    Employe employe = ligueActuelle.addEmploye(
+                            result.getInt("id_employe"),
+                            result.getString("nom_employe"),
+                            result.getString("prenom_employe"),
+                            result.getString("mail_employe"),
+                            result.getString("password_employe"),
+                            result.getObject("date_arrivee_employe", LocalDate.class),
+                            result.getObject("date_depart_employe", LocalDate.class)
+                    );
+
+                    if ("admin".equalsIgnoreCase(result.getString("role_employe")))
+                        ligueActuelle.setAdministrateur(employe);
+                }
             }
 
             PreparedStatement instructionRoot = connection.prepareStatement("SELECT * FROM employe WHERE id_ligue IS NULL");
@@ -165,7 +179,7 @@ public class JDBC implements Passerelle
         try
         {
             PreparedStatement instruction;
-            instruction = connection.prepareStatement("update employe set nom_employe = ?, prenom_employe = ?, mail_employe = ?, password_employe = ?, date_arrivee_employe = ?, date_depart_employe = ?, id_ligue = ? where id_employe = ?");
+            instruction = connection.prepareStatement("UPDATE employe SET nom_employe = ?, prenom_employe = ?, mail_employe = ?, password_employe = ?, date_arrivee_employe = ?, date_depart_employe = ?, id_ligue = ?, role_employe = ? WHERE id_employe = ?");
             instruction.setString(1, employe.getNom());
             instruction.setString(2, employe.getPrenom());
             instruction.setString(3, employe.getMail());
@@ -176,7 +190,11 @@ public class JDBC implements Passerelle
                 instruction.setInt(7, employe.getLigue().getId());
             else
                 instruction.setNull(7, java.sql.Types.INTEGER);
-            instruction.setInt(8, employe.getId());
+            if (employe.getLigue() != null && employe.estAdmin(employe.getLigue()))
+                instruction.setString(8, "admin");
+            else
+                instruction.setNull(8, java.sql.Types.VARCHAR);
+            instruction.setInt(9, employe.getId());
 
             instruction.executeUpdate();
 
@@ -192,7 +210,7 @@ public class JDBC implements Passerelle
     {
         try
         {
-            PreparedStatement instruction = connection.prepareStatement("delete from employe WHERE id = ?");
+            PreparedStatement instruction = connection.prepareStatement("delete from employe WHERE id_employe = ?");
             instruction.setInt(1, employe.getId());
             instruction.executeUpdate();
         }
@@ -208,7 +226,11 @@ public class JDBC implements Passerelle
     {
         try
         {
-            PreparedStatement instruction = connection.prepareStatement("delete from ligue WHERE id = ?");
+            PreparedStatement instruction = connection.prepareStatement("DELETE FROM employe WHERE id_ligue = ?");
+            instruction.setInt(1, ligue.getId());
+            instruction.executeUpdate();
+
+            instruction = connection.prepareStatement("DELETE FROM ligue WHERE id_ligue = ?");
             instruction.setInt(1, ligue.getId());
             instruction.executeUpdate();
         }
