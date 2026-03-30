@@ -1,5 +1,7 @@
 package personnel;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 
@@ -22,7 +24,7 @@ public class Employe implements Serializable, Comparable<Employe>
 
     Employe(GestionPersonnel gestionPersonnel, Ligue ligue, String nom, String prenom, String mail, String password, LocalDate dateArrivee, LocalDate dateDepart) throws SauvegardeImpossible , DateInvalide
     {
-        this(gestionPersonnel,ligue,-1 , nom, prenom, mail, password, dateArrivee, dateDepart);
+        this(gestionPersonnel,ligue,-1 , nom, prenom, mail, BCrypt.hashpw(password, BCrypt.gensalt()), dateArrivee, dateDepart);
         this.id = gestionPersonnel.insert(this);
     }
 
@@ -137,7 +139,7 @@ public class Employe implements Serializable, Comparable<Employe>
 	
 	public boolean checkPassword(String password)
 	{
-		return this.password.equals(password);
+		return BCrypt.checkpw(password, this.password);
 	}
 
 	/**
@@ -147,7 +149,7 @@ public class Employe implements Serializable, Comparable<Employe>
 	
 	public void setPassword(String password) throws SauvegardeImpossible
 	{
-		this.password= password;
+		this.password= BCrypt.hashpw(password, BCrypt.gensalt());
         gestionPersonnel.update(this);
 	}
 
