@@ -160,6 +160,8 @@ public class JDBC implements Passerelle
     }
     public void update(Employe employe) throws SauvegardeImpossible
     {
+        if (employe.getId() == -1)
+            return;
         try
         {
             PreparedStatement instruction;
