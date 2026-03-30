@@ -34,28 +34,30 @@ public class JDBC implements Passerelle
 	@Override
 	public GestionPersonnel getGestionPersonnel()
 	{
-		GestionPersonnel gestionPersonnel = new GestionPersonnel();
-		try 
-		{
-			String requete = "select * from ligue";
-			Statement instruction = connection.createStatement();
-			ResultSet ligues = instruction.executeQuery(requete);
-            while (ligues.next())
+        GestionPersonnel gestionPersonnel = new GestionPersonnel();
+        try
+        {
+            String requete = "SELECT ligue.id_ligue, nom_ligue, id_employe, nom_employe, prenom_employe, mail_employe, password_employe, date_arrivee_employe, date_depart_employe FROM ligue LEFT JOIN employe ON ligue.id_ligue = employe.id_ligue ORDER BY ligue.id_ligue";
+            Statement instruction = connection.createStatement();
+            ResultSet result = instruction.executeQuery(requete);
+
+            Ligue ligueActuelle = null;
+
+            while (result.next())
             {
-                Ligue ligue = gestionPersonnel.addLigue(ligues.getInt(1), ligues.getString(2));
-                PreparedStatement instructionEmployes = connection.prepareStatement("SELECT * FROM employe WHERE id_ligue = ?");
-                instructionEmployes.setInt(1, ligue.getId());
-                ResultSet employes = instructionEmployes.executeQuery();
-                while (employes.next())
-                    ligue.addEmploye(employes.getInt("id_employe"), employes.getString("nom_employe"), employes.getString("prenom_employe"), employes.getString("mail_employe"), employes.getString("password_employe"), employes.getObject("date_arrivee_employe", LocalDate.class), employes.getObject("date_depart_employe", LocalDate.class));
+                int idLigue = result.getInt("id_ligue");
+
+                if (ligueActuelle == null || ligueActuelle.getId() != idLigue)
+                    ligueActuelle = gestionPersonnel.addLigue(idLigue, result.getString("nom_ligue"));
+
+                if (result.getObject("id_employe") != null) ligueActuelle.addEmploye(result.getInt("id_employe"), result.getString("nom_employe"), result.getString("prenom_employe"), result.getString("mail_employe"), result.getString("password_employe"), result.getObject("date_arrivee_employe", LocalDate.class), result.getObject("date_depart_employe", LocalDate.class));
             }
-            PreparedStatement instructionRoot = connection.prepareStatement("select * from EMPLOYE where id_ligue is NULL");
+
+            PreparedStatement instructionRoot = connection.prepareStatement("SELECT * FROM employe WHERE id_ligue IS NULL");
             ResultSet root = instructionRoot.executeQuery();
             if (root.next())
-            {
                 gestionPersonnel.addRoot(root.getInt("id_employe"), root.getString("nom_employe"), root.getString("prenom_employe"), root.getString("mail_employe"), root.getString("password_employe"), root.getObject("date_arrivee_employe", LocalDate.class), root.getObject("date_depart_employe", LocalDate.class));
-            }
-		}
+        }
 		catch (SQLException e)
 		{
 			System.out.println(e);
@@ -94,7 +96,7 @@ public class JDBC implements Passerelle
 		try 
 		{
 			PreparedStatement instruction;
-			instruction = connection.prepareStatement("insert into ligue (nom) values(?)", Statement.RETURN_GENERATED_KEYS);
+			instruction = connection.prepareStatement("insert into ligue (nom_ligue) values(?)", Statement.RETURN_GENERATED_KEYS);
 			instruction.setString(1, ligue.getNom());		
 			instruction.executeUpdate();
 			ResultSet id = instruction.getGeneratedKeys();
@@ -114,7 +116,7 @@ public class JDBC implements Passerelle
         try
         {
             PreparedStatement instruction;
-            instruction = connection.prepareStatement("insert into EMPLOYE (nom_employe, prenom_employe, mail_employe, password_employe, date_arrivee_employe, date_départ_employe, id_ligue) values (?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+            instruction = connection.prepareStatement("insert into EMPLOYE (nom_employe, prenom_employe, mail_employe, password_employe, date_arrivee_employe, date_depart_employe, id_ligue) values (?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             instruction.setString(1, employe.getNom());
             instruction.setString(2, employe.getPrenom());
             instruction.setString(3, employe.getMail());
