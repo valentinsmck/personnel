@@ -40,9 +40,15 @@ public class JDBC implements Passerelle
 			String requete = "select * from ligue";
 			Statement instruction = connection.createStatement();
 			ResultSet ligues = instruction.executeQuery(requete);
-			while (ligues.next())
-				gestionPersonnel.addLigue(ligues.getInt(1), ligues.getString(2));
-
+            while (ligues.next())
+            {
+                Ligue ligue = gestionPersonnel.addLigue(ligues.getInt(1), ligues.getString(2));
+                PreparedStatement instructionEmployes = connection.prepareStatement("SELECT * FROM employe WHERE id_ligue = ?");
+                instructionEmployes.setInt(1, ligue.getId());
+                ResultSet employes = instructionEmployes.executeQuery();
+                while (employes.next())
+                    ligue.addEmploye(employes.getInt("id_employe"), employes.getString("nom_employe"), employes.getString("prenom_employe"), employes.getString("mail_employe"), employes.getString("password_employe"), employes.getObject("date_arrivee_employe", LocalDate.class), employes.getObject("date_depart_employe", LocalDate.class));
+            }
             PreparedStatement instructionRoot = connection.prepareStatement("select * from EMPLOYE where id_ligue is NULL");
             ResultSet root = instructionRoot.executeQuery();
             if (root.next())
