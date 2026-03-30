@@ -108,7 +108,12 @@ public class GestionPersonnel implements Serializable
 		ligues.add(ligue);
 		return ligue;
 	}
-	
+
+    public void delete(Employe employe) throws SauvegardeImpossible
+    {
+        passerelle.delete(employe);
+    }
+
 	public Ligue addLigue(int id, String nom)
 	{
 		Ligue ligue = new Ligue(this, id, nom);
