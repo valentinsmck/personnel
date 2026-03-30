@@ -87,15 +87,18 @@ public class Ligue implements Serializable, Comparable<Ligue>
 	 * administrateur.
 	 * @param administrateur le nouvel administrateur de la ligue.
 	 */
-	
-	public void setAdministrateur(Employe administrateur) throws SauvegardeImpossible
-	{
-		Employe root = gestionPersonnel.getRoot();
-		if (administrateur != root && administrateur.getLigue() != this)
-			throw new DroitsInsuffisants();
-		this.administrateur = administrateur;
+
+    public void setAdministrateur(Employe administrateur) throws SauvegardeImpossible
+    {
+        Employe root = gestionPersonnel.getRoot();
+        if (administrateur != root && administrateur.getLigue() != this)
+            throw new DroitsInsuffisants();
+        Employe ancienAdmin = this.administrateur;
+        this.administrateur = administrateur;
         gestionPersonnel.update(administrateur);
-	}
+        if (ancienAdmin != null && !ancienAdmin.estRoot())
+            gestionPersonnel.update(ancienAdmin);
+    }
 
 	/**
 	 * Retourne les employés de la ligue.
