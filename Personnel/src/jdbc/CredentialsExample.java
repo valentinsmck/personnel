@@ -19,7 +19,7 @@ public class CredentialsExample
 	/** Construit l'URL JDBC complete. */
 	static String getUrl() 
 	{
-		return "jdbc:" + driver + "://" + host + ":" + port + "/" + database ;
+		return "jdbc:" + driver + "://" + host + ":" + port + "/" + database + "?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true";
 	}
 	
 	/** Retourne la classe Java du driver JDBC. */
